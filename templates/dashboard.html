@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% extends "base.html" %}
+
+{% block title %}Табло – CyberEdu AI Lab{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">Добре дошъл в CyberEdu AI Lab</h2>
+
+<div class="row g-4">
+
+    <!-- Анализ на индивидуален лог -->
+    <div class="col-md-6">
+        <div class="card border-primary shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title text-primary">Анализирай SOC лог</h5>
+                <p class="card-text">Ръчно въведи или зареди лог за анализ.</p>
+                <a href="/" class="btn btn-primary">Отвори Анализатора</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Групов анализ -->
+    <div class="col-md-6">
+        <div class="card border-success shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title text-success">Анализирай всички логове</h5>
+                <p class="card-text">Извърши групов анализ на JSON логовете.</p>
+                <form action="/analyze-all" method="post">
+                    <button class="btn btn-success">Стартирай</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Преглед на PDF отчети -->
+    <div class="col-md-6">
+        <div class="card border-warning shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title text-warning">PDF Отчети</h5>
+                <p class="card-text">Прегледай или изтегли създадените PDF анализи.</p>
+                <a href="/reports" class="btn btn-warning text-dark">Прегледай</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Сваляне на ZIP архив -->
+    <div class="col-md-6">
+        <div class="card border-danger shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title text-danger">Свали архив</h5>
+                <p class="card-text">Изтегли всички резултати като ZIP файл.</p>
+                <a href="/export" class="btn btn-danger">Свали ZIP</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Изчистване на резултати -->
+<div class="text-center mt-5">
+    <form action="/clear-results" method="post" onsubmit="return confirm('Сигурен ли си, че искаш да изтриеш всички резултати?');">
+        <button class="btn btn-outline-danger">🗑 Изчисти всички резултати</button>
+    </form>
+</div>
+
+{% endblock %}
+
+</body>
+</html>

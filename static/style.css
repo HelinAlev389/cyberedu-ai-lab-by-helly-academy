@@ -45,3 +45,38 @@ input[type="file"] {
     margin-top: 20px;
     white-space: pre-wrap;
 }
+
+
+body {
+    background-color: #f4f6fb;
+}
+
+.navbar {
+    background-color: #2C3C83;
+}
+
+.navbar-brand, .nav-link {
+    color: white !important;
+    font-weight: 500;
+}
+
+footer {
+    background-color: #2C3C83;
+    color: white;
+}
+
+.btn-primary {
+    background-color: #197C85;
+    border-color: #197C85;
+}
+
+.btn-warning {
+    background-color: #F5C054;
+    border-color: #F5C054;
+    color: black;
+}
+
+.btn-danger {
+    background-color: #D74042;
+    border-color: #D74042;
+}

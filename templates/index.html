@@ -1,32 +1,30 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>CyberEdu AI Lab</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% extends "base.html" %}
 
-</head>
-<body>
-    <h2>Въведи SOC лог за анализ</h2>
+{% block title %}SOC Анализатор{% endblock %}
 
-    <textarea id="logInput" rows="10" cols="70">{
+{% block content %}
+<h2 class="mb-3">Въведи SOC лог за анализ</h2>
+
+<textarea id="logInput" class="form-control" rows="10">{
   "timestamp": "2025-05-12T14:03:00Z",
   "event": "failed_login",
   "user": "student01",
   "ip_address": "192.168.1.56",
   "location": "Lab-PC-03"
-}</textarea><br><br>
+}</textarea>
 
-    <label for="logFile">Зареди JSON лог файл:</label>
-    <input type="file" id="logFile" accept=".json" onchange="loadFile()"><br><br>
+<div class="my-3">
+    <label for="logFile" class="form-label">Зареди JSON лог файл:</label>
+    <input type="file" id="logFile" class="form-control" accept=".json" onchange="loadFile()">
+</div>
 
-    <button onclick="analyze()">Анализирай</button>
-    <br><br>
-    <button onclick="analyzeAll()">Анализирай всички логове</button>
+<div class="d-flex gap-2 mb-4">
+    <button class="btn btn-primary" onclick="analyze()">Анализирай</button>
+    <button class="btn btn-warning" onclick="analyzeAll()">Анализирай всички логове</button>
+</div>
 
+<h4>Резултат:</h4>
+<pre id="result" class="bg-light p-3 rounded border"></pre>
 
-    <h3>Резултат:</h3>
-    <pre id="result"></pre>
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-</html>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+{% extends "base.html" %}
+{% block content %}
+<h2>Вход в CyberEdu AI Lab</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label for="username" class="form-label">Потребителско име</label>
+        <input type="text" class="form-control" name="username" required>
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Парола</label>
+        <input type="password" class="form-control" name="password" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Вход</button>
+</form>
+{% endblock %}
+
+
+</body>
+</html>
