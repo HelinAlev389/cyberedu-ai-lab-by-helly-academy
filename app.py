@@ -1,4 +1,3 @@
-import datetime
 import io
 import json
 import os
@@ -27,6 +26,7 @@ from utils.pdf_export import export_to_pdf, sanitize_filename
 from utils.save_ctf_response import save_ctf_report
 from utils.ai_feedback import get_ctf_feedback
 from utils.walkthroughs import WALKTHROUGHS
+import datetime
 
 load_dotenv()
 
@@ -231,7 +231,7 @@ def analyze_all():
                     {"role": "user", "content": prompt}
                 ]
             )
-            result = response.choices[0].message.content  # <-- това липсваше
+            result = response.choices[0].message.content
 
             ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             txt_name = f"{os.path.splitext(fn)[0]}_{ts}_result.txt"
