@@ -1,9 +1,14 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f7fa;
-    padding: 40px;
-    color: #333;
+  background: #1f2330;
+  color: #e4e6eb;
 }
+.card {
+  background: #2a2e3e;
+  color: #e4e6eb;
+}
+.navbar-brand, .nav-link { color: #e4e6eb !important; }
+footer { background: #2C3C83; }
+
 
 h2 {
     color: #1a1a1a;
@@ -47,23 +52,10 @@ input[type="file"] {
 }
 
 
-body {
-    background-color: #f4f6fb;
-}
 
-.navbar {
-    background-color: #2C3C83;
-}
 
-.navbar-brand, .nav-link {
-    color: white !important;
-    font-weight: 500;
-}
 
-footer {
-    background-color: #2C3C83;
-    color: white;
-}
+footer { background: #2C3C83; }
 
 .btn-primary {
     background-color: #197C85;

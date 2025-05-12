@@ -1,3 +1,11 @@
-flask
-openai
-python-dotenv
+Flask~=3.0.3
+flask-login
+flask-wtf
+flask-sqlalchemy
+Werkzeug~=3.0.3
+
+reportlab~=4.4.0
+openai~=1.78.1
+python-dotenv~=1.1.0
+app~=0.0.1
+wtforms~=3.2.1
