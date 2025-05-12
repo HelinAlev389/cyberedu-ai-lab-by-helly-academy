@@ -1,0 +1,21 @@
+Log:
+{
+  "timestamp": "2025-05-12T18:02:47Z",
+  "event": "powershell_execution",
+  "user": "student02",
+  "command": "powershell -enc aGVsbG8gd29ybGQ=",
+  "location": "Lab-PC-07"
+}
+
+
+---
+GPT Response:
+### Incident Analysis:
+1. **Type of Incident:** Malicious PowerShell Execution.
+2. **Risk Level:** High.
+3. **Description:** The log indicates that a user named "student02" executed a PowerShell command that decodes to "hello world" in base64 encoding. This could be an attempt to execute malicious code or initiate unauthorized activities using PowerShell.
+4. **Prevention/Response Recommendation:** 
+   - **Prevention:** Implement PowerShell security best practices, restrict PowerShell access, and monitor PowerShell activity for suspicious behavior.
+   - **Response:** Investigate the incident, isolate the affected system, roll back any unauthorized changes, and educate users on safe PowerShell usage.
+
+Remember, PowerShell is a powerful tool that can be misused by threat actors for malicious activities. Always stay vigilant and follow security protocols to mitigate risks associated with PowerShell exploitation.

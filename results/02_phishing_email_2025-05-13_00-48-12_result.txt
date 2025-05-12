@@ -1,0 +1,25 @@
+Log:
+{
+  "timestamp": "2025-05-12T14:15:02Z",
+  "event": "email_received",
+  "subject": "Your password has expired!",
+  "sender": "support@micros0ft-secure.com",
+  "attachment": "reset-password.html",
+  "recipient": "student@academy.edu",
+  "location": "Inbox-Student01"
+}
+
+
+---
+GPT Response:
+**Incident Analysis:**
+
+1. **Type of Incident:** Phishing
+2. **Risk Level:** Medium
+3. **Explanation:** In this log, an email was received with the subject "Your password has expired!" The sender's address is spoofed as "support@micros0ft-secure.com," trying to mimic a legitimate Microsoft domain. The email likely contains a phishing link disguised as an attachment named "reset-password.html." If opened, this link could lead to a phishing website aiming to steal login credentials or spread malware.
+
+4. **Prevention/Response Recommendation:**
+   - **Prevention:** Educate users to identify phishing emails by checking sender addresses for authenticity, avoiding clicking on suspicious links or downloading attachments from unknown sources. Implement email filtering to detect and block phishing attempts.
+   - **Response:** If a user has interacted with the email, advise them to change their password immediately, report the incident to the IT/security team, and potentially scan their device for malware.
+
+Stay vigilant and think twice before interacting with unexpected emails to protect yourself and the organization from phishing threats.

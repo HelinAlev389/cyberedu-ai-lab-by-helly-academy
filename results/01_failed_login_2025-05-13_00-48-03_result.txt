@@ -1,0 +1,23 @@
+Log:
+{
+  "timestamp": "2025-05-12T10:22:34Z",
+  "event": "failed_login",
+  "user": "admin",
+  "ip_address": "203.0.113.45",
+  "attempts": 12,
+  "location": "Server-01"
+}
+
+
+---
+GPT Response:
+**Incident Analysis:**
+
+1. **Type of Incident:** Brute-force Attack
+2. **Risk Level:** Medium
+3. **Explanation:** The log indicates multiple failed login attempts (12 attempts) by the user "admin" from the IP address "203.0.113.45" on "Server-01." This pattern suggests a brute-force attack, where an attacker is trying multiple password combinations to gain unauthorized access to the system.
+4. **Recommendation:** 
+   - Implement account lockout policies after a certain number of failed login attempts to prevent brute-force attacks.
+   - Enforce strong password policies and encourage users to use multi-factor authentication.
+
+If you have any questions or need further clarification, feel free to ask!

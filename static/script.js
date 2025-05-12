@@ -41,3 +41,13 @@ function downloadResult(log, result) {
     a.click();
     URL.revokeObjectURL(url);
 }
+
+async function analyzeAll() {
+    const response = await fetch("/analyze-all", { method: "POST" });
+    const data = await response.json();
+    let output = "Batch анализ завършен:\n";
+    data.summary.forEach(item => {
+        output += `• ${item.file} → ${item.status}\n`;
+    });
+    document.getElementById("result").innerText = output;
+}
