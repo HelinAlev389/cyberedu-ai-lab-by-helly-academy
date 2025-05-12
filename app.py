@@ -4,6 +4,8 @@ import os
 from dotenv import load_dotenv
 import datetime
 import json
+from utils.pdf_export import export_to_pdf
+
 
 load_dotenv()
 client = OpenAI()
@@ -55,6 +57,8 @@ def analyze_log():
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     os.makedirs("results", exist_ok=True)
     filename = f"results/{timestamp}_result.txt"
+    pdf_filename = f"results/{timestamp}_result.pdf"
+    export_to_pdf(log_raw, gpt_result, pdf_filename)
 
     with open(filename, "w", encoding="utf-8") as f:
         f.write("Log:\n" + log_raw + "\n\n---\nGPT Response:\n" + gpt_result)
@@ -99,6 +103,8 @@ def analyze_all_logs():
 
                 timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
                 result_filename = f"{os.path.splitext(filename)[0]}_{timestamp}_result.txt"
+                pdf_filename = os.path.join(results_dir, f"{os.path.splitext(filename)[0]}_{timestamp}_result.pdf")
+                export_to_pdf(log_content, gpt_result, pdf_filename)
 
                 with open(os.path.join(results_dir, result_filename), "w", encoding="utf-8") as f:
                     f.write("Log:\n" + log_content + "\n\n---\nGPT Response:\n" + gpt_result)
