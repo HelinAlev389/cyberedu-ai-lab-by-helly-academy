@@ -29,4 +29,34 @@ CyberEdu AI Lab by Helly Academy – SOC Анализатор в реално в
 
 1. Създай файл `.env` в основната директория
 2. Въведи своя OpenAI API ключ така:
+OPENAI_API_KEY=sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+3. Не качвай `.env` в GitHub – той вече е включен в `.gitignore`
+
+---
+
+## ▶️ Стартиране на проекта
+
+```bash
+# Активирай виртуалната среда
+source venv/Scripts/activate  # Windows
+# или
+source venv/bin/activate      # macOS/Linux
+
+# Инсталирай зависимости
+pip install -r requirements.txt
+
+# Стартирай приложението
+python app.py
+
+
+{
+  "timestamp": "2025-05-12T14:03:00Z",
+  "event": "failed_login",
+  "user": "student01",
+  "ip_address": "192.168.1.56",
+  "location": "Lab-PC-03"
+}
+
 
