@@ -1,9 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
 {% extends "base.html" %}
 
 {% block title %}SOC Анализатор{% endblock %}
 
 {% block content %}
 <h2 class="mb-3">Въведи SOC лог за анализ</h2>
+<a href="{{ url_for('scenarios') }}" class="btn btn-secondary mb-3">
+  Избор на готови сценарии
+</a>
+
+
+
 
 <textarea id="logInput" class="form-control" rows="10">{
   "timestamp": "2025-05-12T14:03:00Z",
@@ -27,4 +40,23 @@
 <pre id="result" class="bg-light p-3 rounded border"></pre>
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>
-{% endblock %}
+{% end-block %}
+
+{% if preloaded_log %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("logInput").value = `{{ preloaded_log|e }}`;
+  });
+</script>
+{% endif %}
+{% if preloaded_log %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("logInput").value = `{{ preloaded_log|e }}`;
+  });
+</script>
+{% endif %}
+
+
+</body>
+</html>

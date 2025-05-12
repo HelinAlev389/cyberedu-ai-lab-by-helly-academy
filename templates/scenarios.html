@@ -1,10 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>Title</title>
 </head>
 <body>
-$END$
+
+
+{% extends "base.html" %}
+{% block title %}Избор на сценарий{% endblock %}
+{% block content %}
+<h2 class="mb-4">Избери SOC сценарий</h2>
+<ul class="list-group">
+  {% for file in scenarios %}
+    <li class="list-group-item">
+      <a href="{{ url_for('load_scenario', name=file) }}">{{ file }}</a>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}
+
+
 </body>
 </html>

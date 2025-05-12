@@ -23,13 +23,17 @@
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Начало</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('analyze_log') }}">Анализ</a></li>
+    {% if current_user.is_authenticated %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Табло</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('reports') }}">Отчети</a></li>
-        {% if current_user.is_authenticated %}
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Изход</a></li>
-        {% endif %}
-      </ul>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('scenarios') }}">Избор на готови сценарии</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Изход</a></li>
+    {% else %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Вход</a></li>
+    {% endif %}
+</ul>
+
+
     </div>
   </div>
 </nav>
