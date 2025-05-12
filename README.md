@@ -32,6 +32,8 @@
 
 ## 📁 Структура на проекта
 
+```text
+
 cyberedu-ai-lab-by-helly-academy/
 ├── app.py
 ├── templates/
