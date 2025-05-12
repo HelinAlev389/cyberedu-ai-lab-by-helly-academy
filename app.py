@@ -3,6 +3,7 @@ import json
 import os
 import zipfile
 from collections import Counter
+from sqlalchemy import func
 
 from dotenv import load_dotenv
 from flask import (
@@ -34,6 +35,7 @@ app = Flask(__name__, static_folder="static")
 app.secret_key = os.getenv("SECRET_KEY", "supersecret123")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+client = OpenAI()
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -106,7 +108,6 @@ Task:
 Here is the log to analyze:
 {log}
 """
-
 
 # --- Routes ---
 
@@ -566,8 +567,6 @@ class CTFResult(db.Model):
 @app.route("/leaderboard")
 @login_required
 def leaderboard():
-    from sqlalchemy import func
-
     scores = (
         db.session.query(CTFResult.username, func.sum(CTFResult.points).label("total_points"))
         .group_by(CTFResult.username)
@@ -576,6 +575,13 @@ def leaderboard():
     )
 
     return render_template("leaderboard.html", scores=scores)
+
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    os.makedirs("results", exist_ok=True)
+    filename = f"results/{timestamp}_result.txt"
+
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write("Log:\n" + log_raw + "\n\n---\nGPT Response:\n" + gpt_result)
 
 
 @app.route("/ai-chat", methods=["POST"])
