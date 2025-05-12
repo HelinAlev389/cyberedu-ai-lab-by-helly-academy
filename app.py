@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+import datetime
 
 load_dotenv()
 
@@ -41,7 +42,14 @@ Here is the log to analyze:
         ]
     )
 
-    return jsonify({"answer": response.choices[0].message.content})
+    gpt_result = response.choices[0].message.content
+
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    filename = f"results/{timestamp}_result.txt"
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write("Log:\n" + log + "\n\n---\nGPT Response:\n" + gpt_result)
+
+    return jsonify({"answer": gpt_result})
 
 
 if __name__ == "__main__":
