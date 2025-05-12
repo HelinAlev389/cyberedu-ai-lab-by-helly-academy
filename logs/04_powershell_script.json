@@ -1,0 +1,7 @@
+{
+  "timestamp": "2025-05-12T18:02:47Z",
+  "event": "powershell_execution",
+  "user": "student02",
+  "command": "powershell -enc aGVsbG8gd29ybGQ=",
+  "location": "Lab-PC-07"
+}

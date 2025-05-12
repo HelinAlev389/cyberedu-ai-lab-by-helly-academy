@@ -1,0 +1,7 @@
+{
+  "timestamp": "2025-05-12T20:11:03Z",
+  "event": "privilege_escalation",
+  "user": "student03",
+  "action": "added to Administrators group",
+  "location": "DomainController-01"
+}

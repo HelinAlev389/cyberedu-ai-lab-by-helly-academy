@@ -5,28 +5,23 @@
 </head>
 <body>
     <h2>Въведи SOC лог за анализ</h2>
+
     <textarea id="logInput" rows="10" cols="70">{
   "timestamp": "2025-05-12T14:03:00Z",
   "event": "failed_login",
   "user": "student01",
   "ip_address": "192.168.1.56",
   "location": "Lab-PC-03"
-}</textarea><br>
+}</textarea><br><br>
+
+    <label for="logFile">Зареди JSON лог файл:</label>
+    <input type="file" id="logFile" accept=".json" onchange="loadFile()"><br><br>
+
     <button onclick="analyze()">Анализирай</button>
+
     <h3>Резултат:</h3>
     <pre id="result"></pre>
 
-    <script>
-        async function analyze() {
-            const log = document.getElementById("logInput").value;
-            const response = await fetch("/analyze-log", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({log})
-            });
-            const data = await response.json();
-            document.getElementById("result").innerText = data.answer;
-        }
-    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

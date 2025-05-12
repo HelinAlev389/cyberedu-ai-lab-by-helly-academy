@@ -3,9 +3,11 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
+load_dotenv()
+
+client = OpenAI()
 
 app = Flask(__name__)
-client = OpenAI()
 
 
 @app.route("/")
@@ -44,5 +46,3 @@ Here is the log to analyze:
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-load_dotenv()
