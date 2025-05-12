@@ -1,0 +1,21 @@
+Log:
+{
+  "timestamp": "2025-05-12T14:03:00Z",
+  "event": "failed_login",
+  "user": "none",
+  "ip_address": "192.168.1.56",
+  "location": "Lab-PC-03"
+}
+
+---
+GPT Response:
+**Incident Analysis:**
+
+1. **Type of Incident:** Brute-force attack
+2. **Risk Level:** Medium
+3. **Explanation:** The log indicates a "failed_login" event with no specific user involved, originating from IP address "192.168.1.56" located in "Lab-PC-03." This suggests a potential brute-force attack where an attacker is trying to gain unauthorized access to the system by repeatedly trying different username and password combinations.
+4. **Recommendation:** 
+   - Implement account lockout policies after a certain number of failed login attempts to prevent brute-force attacks.
+   - Enforce strong password policies and consider implementing multi-factor authentication to enhance security.
+
+By taking these preventive measures, the risk of successful unauthorized access through brute-force attacks can be mitigated.

@@ -3,9 +3,9 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import datetime
+import json
 
 load_dotenv()
-
 client = OpenAI()
 
 app = Flask(__name__)
@@ -15,11 +15,15 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
-
 @app.route("/analyze-log", methods=["POST"])
 def analyze_log():
     data = request.json
-    log = data.get("log", "")
+    log_raw = data.get("log", "")
+
+    try:
+        parsed_log = json.loads(log_raw)
+    except (json.JSONDecodeError, TypeError):
+        return jsonify({"answer": "⚠ Грешка: логът не е валиден JSON. Моля, провери синтаксиса."})
 
     prompt = f"""
 You are an AI SOC Analyst designed to educate students on cyber incidents.
@@ -29,9 +33,8 @@ Task:
 2. Assess the risk level (Low, Medium, High).
 3. Explain what is happening in simple, educational language.
 4. Suggest a prevention or response recommendation.
-
 Here is the log to analyze:
-{log}
+{log_raw}
 """
 
     response = client.chat.completions.create(
@@ -45,12 +48,13 @@ Here is the log to analyze:
     gpt_result = response.choices[0].message.content
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    os.makedirs("results", exist_ok=True)
     filename = f"results/{timestamp}_result.txt"
+
     with open(filename, "w", encoding="utf-8") as f:
-        f.write("Log:\n" + log + "\n\n---\nGPT Response:\n" + gpt_result)
+        f.write("Log:\n" + log_raw + "\n\n---\nGPT Response:\n" + gpt_result)
 
     return jsonify({"answer": gpt_result})
-
 
 if __name__ == "__main__":
     app.run(debug=True)
