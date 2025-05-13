@@ -1,9 +1,8 @@
 import datetime
 import os
 import time
-
 from dotenv import load_dotenv
-from flask import Flask, render_template, redirect, url_for, request, jsonify, flash
+from flask import Flask, render_template, redirect, url_for, request, jsonify, flash, session
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
@@ -11,7 +10,6 @@ from openai import OpenAI
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SelectField, SubmitField
 from wtforms.validators import DataRequired, Length
-
 from utils.pdf_export import export_to_pdf
 
 load_dotenv()
@@ -53,8 +51,11 @@ class RegistrationForm(FlaskForm):
     last_name = StringField('Фамилия', validators=[DataRequired(), Length(1, 80)])
     username = StringField('Потребителско име', validators=[DataRequired(), Length(4, 80)])
     password = PasswordField('Парола', validators=[DataRequired(), Length(6, 200)])
-    role = SelectField('Роля',
-                       choices=[('student', 'Студент'), ('teacher', 'Преподавател'), ('admin', 'Администратор')])
+    role = SelectField('Роля', choices=[
+        ('student', 'Студент'),
+        ('teacher', 'Преподавател'),
+        ('admin', 'Администратор')
+    ])
     submit = SubmitField('Регистрация')
 
 
@@ -91,8 +92,12 @@ def register():
         if User.query.filter_by(username=form.username.data).first():
             form.username.errors.append('Потребителското име е заето.')
         else:
-            user = User(username=form.username.data, first_name=form.first_name.data,
-                        last_name=form.last_name.data, role=form.role.data)
+            user = User(
+                username=form.username.data,
+                first_name=form.first_name.data,
+                last_name=form.last_name.data,
+                role=form.role.data
+            )
             user.set_password(form.password.data)
             db.session.add(user)
             db.session.commit()
@@ -207,99 +212,67 @@ def delete_scenario(name):
     return redirect(url_for("scenarios"))
 
 
-@app.route('/walkthrough-feedback', methods=['POST'])
+@app.route("/mission/start")
 @login_required
-def walkthrough_feedback():
-    data = request.json
-    question = data.get("question", "")
-    answer = data.get("answer", "")
-
-    if not question or not answer:
-        return jsonify({"feedback": "Грешка: липсва въпрос или отговор."}), 400
-
-    prompt = f"""
-You are an AI assistant helping a student learn cybersecurity incident analysis.
-Evaluate the following student's answer and provide constructive feedback.
-
-Question: {question}
-Answer: {answer}
-
-Give a short explanation whether the answer is correct or not, and why.
-"""
-
-    resp = openai_client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a SOC analyst trainer."},
-            {"role": "user", "content": prompt}
-        ]
-    )
-    feedback = resp.choices[0].message.content
-    return jsonify({"feedback": feedback})
+def start_mission():
+    with open("missions/01_failed_login.json", "r", encoding="utf-8") as f:
+        log = f.read()
+    session["log"] = log
+    session["step"] = 0
+    session["answers"] = []
+    return render_template("walkthrough.html", question="Какъв тип инцидент е това?")
 
 
-@app.route('/walkthrough-summary', methods=['POST'])
+@app.route("/missions/feedback", methods=["POST"])
 @login_required
-def walkthrough_summary():
-    data = request.json
-    log = data.get("log", "")
-    answers = data.get("answers", {})
+def mission_feedback():
+    user_answer = request.form.get("answer")
+    step = session.get("step", 0)
+    log = session.get("log", "")
+    answers = session.get("answers", [])
 
-    parts = "\n".join([f"Q: {q}\nA: {a}" for q, a in answers.items()])
-    prompt = f"""
-You are an AI SOC Analyst.
-Analyze the following SOC log and user responses to training questions.
+    questions = [
+        "Какъв тип инцидент е това?",
+        "Каква е степента на риска?",
+        "Какво точно се случва?",
+        "Какво препоръчваш като реакция?"
+    ]
 
-SOC Log:
+    answers.append(user_answer)
+    session["answers"] = answers
+    session["step"] = step + 1
+
+    if step + 1 < len(questions):
+        next_question = questions[step + 1]
+        return render_template("walkthrough.html", question=next_question, feedback=get_feedback(step, user_answer))
+    else:
+        summary_prompt = f"""
+Log:
 {log}
 
-Student Answers:
-{parts}
+User Answers:
+Тип инцидент: {answers[0]}
+Ниво на риск: {answers[1]}
+Обяснение: {answers[2]}
+Реакция: {answers[3]}
 
-Provide a full analysis including: incident type, risk level, detailed description and a recommendation.
+Give a structured analysis suitable for SOC training.
 """
+        ai_response = openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": summary_prompt}]
+        ).choices[0].message.content
 
-    resp = openai_client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a cybersecurity trainer."},
-            {"role": "user", "content": prompt}
-        ]
-    )
-    result = resp.choices[0].message.content
-    return jsonify({"summary": result})
+        return render_template("walkthrough_result.html", result=ai_response)
 
 
-@app.route('/mission/start', methods=['GET'])
-@login_required
-def start_training():
-    with open('logs/01_failed_login.json', 'r', encoding='utf-8') as f:
-        log = f.read()
-    return render_template('mission.html', log=log)
-
-
-@app.route('/mission/feedback', methods=['POST'])
-@login_required
-def training_feedback():
-    data = request.json
-    question = data["question"]
-    answer = data["answer"]
-    log = data["log"]
-
-    prompt = f"""Log:\n{log}
-
-Student's answer to the question: "{question}"
-Answer: {answer}
-
-Give short feedback: Is it correct? Why or why not?"""
-
+def get_feedback(step, answer):
+    prompt = f"Студентът отговори на стъпка {step + 1}: '{answer}'. Дай кратка обратна връзка."
     response = openai_client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}]
     )
-
-    feedback = response.choices[0].message.content
-    return jsonify({"feedback": feedback})
+    return response.choices[0].message.content
 
 
 if __name__ == '__main__':

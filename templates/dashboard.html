@@ -13,7 +13,7 @@
     <p>Роля: {{ current_user.role|capitalize }}</p>
 
     {% if current_user.role == 'student' %}
-        <a href="{{ url_for('start_training') }}" class="btn btn-outline-primary mt-3">🚀 Започни тренировъчна мисия</a>
+        <a href="{{ url_for('start_mission') }}" class="btn btn-outline-primary mt-3">🚀 Започни тренировъчна мисия</a>
     {% endif %}
 
     <div class="row mt-4">

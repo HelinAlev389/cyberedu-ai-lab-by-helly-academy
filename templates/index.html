@@ -9,6 +9,7 @@
 
 {% block title %}SOC Анализатор{% endblock %}
 
+
 {% block content %}
 <h2 class="mb-3">Въведи SOC лог за анализ</h2>
 <a href="{{ url_for('scenarios') }}" class="btn btn-secondary mb-3">
@@ -41,6 +42,7 @@
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>
 {% endblock %}
+
 
 {% if preloaded_log %}
 <script>

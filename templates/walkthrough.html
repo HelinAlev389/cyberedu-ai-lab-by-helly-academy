@@ -56,6 +56,23 @@
     </form>
 </div>
 
+
+{% extends "base.html" %}
+{% block content %}
+  <h2>Мисия – Стъпка по стъпка</h2>
+
+  {% if feedback %}
+    <div class="alert alert-info">{{ feedback }}</div>
+  {% endif %}
+
+  <form method="POST" action="{{ url_for('mission_feedback') }}">
+    <p><strong>{{ question }}</strong></p>
+    <input type="text" name="answer" class="form-control" required>
+    <button class="btn btn-primary mt-2">Продължи</button>
+  </form>
+{% endblock %}
+
+
 <script>
     function nextStep(current) {
         document.getElementById(`step-${current}`).classList.remove("active");
