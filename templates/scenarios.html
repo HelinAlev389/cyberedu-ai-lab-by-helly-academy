@@ -6,20 +6,62 @@
 </head>
 <body>
 
+<hr class="my-4">
+<h4>Качи нов сценарий (JSON файл)</h4>
+<form action="{{ url_for('upload_scenario') }}" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <input type="file" name="file" accept=".json" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-success">Качи</button>
+</form>
 
 {% extends "base.html" %}
-{% block title %}Избор на сценарий{% endblock %}
 {% block content %}
-<h2 class="mb-4">Избери SOC сценарий</h2>
-<ul class="list-group">
-  {% for file in scenarios %}
-    <li class="list-group-item">
-      <a href="{{ url_for('load_scenario', name=file) }}">{{ file }}</a>
-    </li>
-  {% endfor %}
-</ul>
-{% endblock %}
+<div class="container mt-4">
+    <h2>Готови SOC сценарии</h2>
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, msg in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ msg }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('upload_scenario') }}" method="post" enctype="multipart/form-data" class="mb-4">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-8">
+                <input type="file" name="file" accept=".json" class="form-control" required>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-success" type="submit">Качи сценарий</button>
+            </div>
+        </div>
+    </form>
+
+    <ul class="list-group mt-4">
+        {% for file in scenarios %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ file }}</strong><br>
+                <small class="text-muted">{{ file.split('_')[0] }}</small>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('load_scenario', name=file) }}" class="btn btn-sm btn-primary">Зареди</a>
+                {% if current_user.role in ['teacher', 'admin'] %}
+                <form action="{{ url_for('delete_scenario', name=file) }}" method="post" onsubmit="return confirm('Сигурни ли сте?')">
+                    <button class="btn btn-sm btn-danger">Изтрий</button>
+                </form>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
 
 </body>
 </html>

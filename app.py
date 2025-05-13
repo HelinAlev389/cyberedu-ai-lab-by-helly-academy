@@ -1,9 +1,10 @@
 import datetime
 import os
+import time
 
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify, render_template, redirect, url_for
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
+from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from openai import OpenAI
@@ -152,6 +153,7 @@ def reports():
     files = sorted([f for f in os.listdir("results") if f.endswith(".pdf")], reverse=True)
     return render_template('reports.html', reports=files)
 
+
 @app.route('/scenarios')
 @login_required
 def scenarios():
@@ -166,6 +168,44 @@ def load_scenario(name):
     with open(path, "r", encoding="utf-8") as f:
         content = f.read()
     return render_template("index.html", preloaded_log=content)
+
+
+@app.route('/upload-scenario', methods=['POST'])
+@login_required
+def upload_scenario():
+    if 'file' not in request.files:
+        flash("Файлът липсва.", "danger")
+        return redirect(url_for('scenarios'))
+
+    file = request.files['file']
+    if file.filename == '' or not file.filename.endswith('.json'):
+        flash("Моля, качете валиден .json файл.", "warning")
+        return redirect(url_for('scenarios'))
+
+    timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+    filename = f"{timestamp}_{file.filename}"
+    save_path = os.path.join('logs', filename)
+    file.save(save_path)
+
+    flash(f"Сценарият '{file.filename}' беше качен успешно.", "success")
+    return redirect(url_for('scenarios'))
+
+
+@app.route("/scenarios/delete/<name>", methods=["POST"])
+@login_required
+def delete_scenario(name):
+    if current_user.role not in ["teacher", "admin"]:
+        return "Недостатъчни права", 403
+
+    path = os.path.join("logs", name)
+    if os.path.exists(path):
+        os.remove(path)
+        flash(f"Сценарият '{name}' беше изтрит.", "warning")
+    else:
+        flash("Файлът не съществува.", "danger")
+
+    return redirect(url_for("scenarios"))
+
 
 if __name__ == '__main__':
     with app.app_context():

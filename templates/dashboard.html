@@ -50,6 +50,13 @@
         </div>
     </div>
 
+    <div class="text-center">
+    <a href="{{ url_for('scenarios') }}" class="btn btn-outline-primary mt-3">
+        📁 Избор на готови сценарии
+    </a>
+</div>
+
+
     <!-- Сваляне на ZIP архив -->
     <div class="col-md-6">
         <div class="card border-danger shadow-sm">
@@ -63,7 +70,6 @@
 
 </div>
 
-<!-- Изчистване на резултати -->
 <div class="text-center mt-5">
     <form action="/clear-results" method="post" onsubmit="return confirm('Сигурен ли си, че искаш да изтриеш всички резултати?');">
         <button class="btn btn-outline-danger">🗑 Изчисти всички резултати</button>
@@ -71,6 +77,16 @@
 </div>
 
 {% endblock %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const log = {{ preloaded_log | tojson | safe }};
+        if (log) {
+            document.getElementById("logInput").value = log;
+        }
+    });
+</script>
+
 
 </body>
 </html>
