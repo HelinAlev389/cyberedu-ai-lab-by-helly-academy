@@ -26,6 +26,9 @@
         <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Начало</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('analyze_log') }}">Анализ</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('reports') }}">Отчети</a></li>
+          <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('siem_dashboard') }}">SIEM Анализатор</a>
+        </li>
         {% if current_user.is_authenticated %}
           <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Изход</a></li>
         {% else %}
@@ -51,6 +54,9 @@
     {% endwith %}
     {% block content %}{% endblock %}
 </main>
+
+
+
 
 <!-- ✅ Footer -->
 <footer class="text-center p-3 bg-dark text-light mt-auto">

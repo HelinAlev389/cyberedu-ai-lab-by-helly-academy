@@ -3,6 +3,7 @@ import io
 import json
 import os
 import zipfile
+from collections import Counter
 
 from dotenv import load_dotenv
 from flask import (
@@ -20,8 +21,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SelectField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Length, EqualTo
 
-
-from utils.pdf_export import export_to_pdf
+from utils.pdf_export import export_to_pdf, sanitize_filename
 
 load_dotenv()
 
@@ -34,10 +34,8 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-openai_client = OpenAI()
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-
-# --- Models ---
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -79,6 +77,7 @@ class RegistrationForm(FlaskForm):
                        validators=[DataRequired()]
                        )
     submit = SubmitField('Регистрация')
+
 
 class LoginForm(FlaskForm):
     username = StringField('Потребителско име', validators=[DataRequired()])
@@ -160,20 +159,27 @@ def dashboard():
 @login_required
 def analyze_log():
     log_raw = request.json.get("log", "")
-    try:
-        json.loads(log_raw)
-    except (json.JSONDecodeError, TypeError):
-        return jsonify({"answer": "Грешка: логът не е валиден JSON."})
+    if isinstance(log_raw, str):
+        try:
+            log_data = json.loads(log_raw)
+        except (json.JSONDecodeError, TypeError):
+            return jsonify({"answer": "Грешка: логът не е валиден JSON."})
+    else:
+        log_data = log_raw
 
-    prompt = build_prompt(log_raw)
-    resp = openai_client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a cybersecurity teacher and SOC analyst."},
-            {"role": "user", "content": prompt}
-        ]
-    )
-    result = resp.choices[0].message.content
+    prompt = build_prompt(json.dumps(log_data, indent=2))
+
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Ти си SOC анализатор."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        result = response.choices[0].message.content
+    except Exception as e:
+        return jsonify({"answer": f"Грешка от OpenAI: {str(e)}"})
 
     ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     os.makedirs("results", exist_ok=True)
@@ -181,8 +187,9 @@ def analyze_log():
     pdf_path = f"results/{ts}_result.pdf"
 
     with open(txt_path, "w", encoding="utf-8") as f:
-        f.write(f"Log:\n{log_raw}\n\n---\nGPT Response:\n{result}")
-    export_to_pdf(log_raw, result, pdf_path)
+        f.write(f"Log:\n{json.dumps(log_data, indent=2)}\n\n---\nGPT Response:\n{result}")
+
+    export_to_pdf(json.dumps(log_data, indent=2), result, pdf_path)
 
     return jsonify({"answer": result})
 
@@ -190,7 +197,8 @@ def analyze_log():
 @app.route('/analyze-all', methods=['POST'])
 @login_required
 def analyze_all():
-    logs_dir = "logs"
+    LOGS_DIR = os.path.join("instance", "logs")
+    logs_dir = LOGS_DIR
     results_dir = "results"
     os.makedirs(results_dir, exist_ok=True)
     summary = []
@@ -211,14 +219,14 @@ def analyze_all():
         try:
             json.loads(log)
             prompt = build_prompt(log)
-            resp = openai_client.chat.completions.create(
-                model="gpt-3.5-turbo",
+            response = openai_client.chat.completions.create(
+                model="gpt-4",
                 messages=[
-                    {"role": "system", "content": "You are a cybersecurity teacher and SOC analyst."},
+                    {"role": "system", "content": "Ти си SOC анализатор."},
                     {"role": "user", "content": prompt}
                 ]
             )
-            result = resp.choices[0].message.content
+            result = response.choices[0].message.content  # <-- това липсваше
 
             ts = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             txt_name = f"{os.path.splitext(fn)[0]}_{ts}_result.txt"
@@ -282,10 +290,161 @@ class ForgotPasswordForm(FlaskForm):
 def forgot_password():
     form = ForgotPasswordForm()
     if form.validate_on_submit():
-        # Тук можеш да пратиш имейл или да покажеш съобщение
         flash("Ако съществува акаунт с този имейл/потребителско име, ще получиш линк за нулиране на паролата.", "info")
         return redirect(url_for('login'))
     return render_template('forgot_password.html', form=form)
+
+
+@app.route("/siem")
+@login_required
+def siem_dashboard():
+    logs_path = "instance/logs"
+    log_files = [f for f in os.listdir(logs_path) if f.endswith(".json")] if os.path.exists(logs_path) else []
+    return render_template("siem.html", log_files=log_files, chart_data=None)
+
+
+@app.route("/siem/analyze", methods=["POST"])
+@login_required
+def siem_analyze():
+    logs_path = "instance/logs"
+    log_files = [f for f in os.listdir(logs_path) if f.endswith(".json")] if os.path.exists(logs_path) else []
+
+    logfile = request.form.get("logfile")
+    filepath = os.path.join(logs_path, logfile)
+
+    try:
+        with open(filepath) as f:
+            data = json.load(f)
+
+        if isinstance(data, dict):
+            data = [data]
+        elif not isinstance(data, list):
+            raise ValueError("Невалиден лог формат – очаква се списък или речник.")
+
+        if not all(isinstance(d, dict) for d in data):
+            raise ValueError("Някои записи не са речници.")
+
+        event_types = []
+        for entry in data:
+            if isinstance(entry, dict):
+                event = entry.get("event_type") or entry.get("event") or "unknown"
+            else:
+                event = "invalid"
+            event_types.append(event)
+
+        counts = Counter(event_types)
+
+        ai_suggestions = {
+            "failed_login": "Прегледай акаунта и активирай допълнителна автентикация.",
+            "privilege_escalation": "Изолирай машината и провери за експлойти.",
+            "suspicious": "Направи задълбочен поведенчески анализ.",
+            "unknown": "Извърши ръчна проверка.",
+            "invalid": "Невалиден запис – провери структурата на лога."
+        }
+
+        chart_data = {
+            "labels": list(counts.keys()),
+            "values": [int(v) for v in counts.values()],
+            "tooltips": [ai_suggestions.get(k, "Няма препоръка.") for k in counts.keys()]
+        }
+
+        prompt = f"Анализирай SOC лог:\n{json.dumps(data, indent=2)}"
+
+        response = openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Ти си SOC анализатор."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        ai_output = response.choices[0].message.content
+
+        return render_template("siem.html",
+                               log_files=log_files,
+                               log=json.dumps(data, indent=2),
+                               ai_analysis=ai_output,
+                               chart_data=chart_data,
+                               data=data)
+
+    except Exception as e:
+        return render_template("siem.html",
+                               log_files=log_files,
+                               log="",
+                               ai_analysis=f"Грешка при анализ: {e}",
+                               chart_data={})
+
+
+@app.route("/upload-log", methods=["POST"])
+@login_required
+def upload_log():
+    file = request.files.get("logfile")
+    if not file:
+        flash("Не е избран файл.", "danger")
+        return redirect(url_for("siem_dashboard"))
+
+    if not file.filename.endswith(".json"):
+        flash("Само .json файлове са позволени.", "warning")
+        return redirect(url_for("siem_dashboard"))
+
+    logs_path = "instance/logs"
+    os.makedirs(logs_path, exist_ok=True)
+
+    filename = f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+    save_path = os.path.join(logs_path, filename)
+    file.save(save_path)
+
+    flash("Файлът е качен успешно!", "success")
+    return redirect(url_for("siem_dashboard"))
+
+
+@app.route("/clear-logs", methods=["POST"])
+@login_required
+def clear_uploaded_logs():
+    logs_path = "instance/logs"
+    deleted = []
+
+    if os.path.exists(logs_path):
+        for f in os.listdir(logs_path):
+            if f.endswith(".json"):
+                try:
+                    os.remove(os.path.join(logs_path, f))
+                    deleted.append(f)
+                except Exception as e:
+                    flash(f"Грешка при изтриване на {f}: {e}", "danger")
+
+    if deleted:
+        flash(f"Изтрити {len(deleted)} лог файла.", "success")
+    else:
+        flash("Няма лог файлове за изтриване.", "info")
+
+    return redirect(url_for("siem_dashboard"))
+
+
+@app.route("/export-siem-pdf", methods=["POST"])
+@login_required
+def export_siem_pdf():
+    log_json = request.form.get("log_data")
+    ai_output = request.form.get("ai_output")
+
+    if not log_json or not ai_output:
+        flash("Грешка: липсват данни за PDF.", "danger")
+        return redirect(url_for("siem_dashboard"))
+
+    try:
+        log_data = json.loads(log_json)
+        log_entry = log_data[0] if isinstance(log_data, list) and log_data else {}
+
+        event_type = sanitize_filename(log_entry.get("event_type", "event"))
+        user = sanitize_filename(log_entry.get("user", "user"))
+        timestamp = sanitize_filename(log_entry.get("timestamp", "timestamp"))
+
+        filename = f"results/soc_report_{event_type}_{user}_{timestamp}.pdf"
+        export_to_pdf(json.dumps(log_data, indent=2), ai_output, filename)
+
+        return send_file(filename, as_attachment=True)
+    except Exception as e:
+        flash(f"Грешка при генериране на PDF: {str(e)}", "danger")
+        return redirect(url_for("siem_dashboard"))
 
 
 

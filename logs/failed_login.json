@@ -1,0 +1,16 @@
+[
+  {
+    "timestamp": "2025-05-13T08:45:01Z",
+    "event_type": "failed_login",
+    "user": "student07",
+    "ip": "192.168.1.50",
+    "location": "VPN-Gateway"
+  },
+  {
+    "timestamp": "2025-05-13T08:45:10Z",
+    "event_type": "failed_login",
+    "user": "student07",
+    "ip": "192.168.1.50",
+    "location": "VPN-Gateway"
+  }
+]
