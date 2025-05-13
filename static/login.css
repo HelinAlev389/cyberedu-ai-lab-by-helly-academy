@@ -1,0 +1,125 @@
+.auth-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f4f7ff;
+}
+
+.auth-visual {
+  flex: 1;
+  background-color: #2C3C83;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-visual img {
+  max-width: 100%;
+  height: auto;
+}
+
+.auth-card {
+  flex: 1;
+  padding: 3rem;
+  background-color: #ffffff;
+  color: #2C3C83;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-card h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: bold;
+}
+
+.form-control,
+.form-select {
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  padding: 0.75rem;
+  background: #fff;
+  color: #2C3C83;
+}
+
+.primary-btn {
+  background-color: #197C85;
+  color: #fff;
+  border-radius: 50px;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.primary-btn:hover {
+  background-color: #165e61;
+}
+
+.secondary-btn {
+  background-color: #F5C054;
+  color: #2C3C83;
+  border-radius: 50px;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.secondary-btn:hover {
+  background-color: #e4b64c;
+}
+
+.accent-link {
+  color: #197C85;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.accent-link:hover {
+  text-decoration: underline;
+  color: #165e61;
+}
+
+.toggle-eye {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  cursor: pointer;
+  color: #666;
+}
+
+.toggle-eye i {
+  font-size: 1rem;
+}
+
+#strength-meter {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #197C85;
+}
+
+.divider {
+  text-align: center;
+  color: #aaa;
+  position: relative;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  height: 1px;
+  width: 40%;
+  background: #ccc;
+  position: absolute;
+  top: 50%;
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}

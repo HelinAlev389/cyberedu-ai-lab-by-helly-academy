@@ -1,8 +1,8 @@
-import os
+import datetime
 import io
 import json
+import os
 import zipfile
-import datetime
 
 from dotenv import load_dotenv
 from flask import (
@@ -11,14 +11,15 @@ from flask import (
 )
 from flask_login import (
     LoginManager, UserMixin,
-    login_user, logout_user, login_required, current_user
+    login_user, logout_user, login_required
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from openai import OpenAI
 from werkzeug.security import generate_password_hash, check_password_hash
-from wtforms import StringField, PasswordField, SelectField, SubmitField
-from wtforms.validators import DataRequired, Length
+from wtforms import StringField, PasswordField, SelectField, SubmitField, BooleanField
+from wtforms.validators import DataRequired, Length, EqualTo
+
 
 from utils.pdf_export import export_to_pdf
 
@@ -35,21 +36,23 @@ login_manager.login_view = 'login'
 
 openai_client = OpenAI()
 
+
 # --- Models ---
 
 class User(db.Model, UserMixin):
-    id          = db.Column(db.Integer, primary_key=True)
-    username    = db.Column(db.String(80), unique=True, nullable=False)
-    password    = db.Column(db.String(200), nullable=False)
-    first_name  = db.Column(db.String(80), nullable=False)
-    last_name   = db.Column(db.String(80), nullable=False)
-    role        = db.Column(db.String(20), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    first_name = db.Column(db.String(80), nullable=False)
+    last_name = db.Column(db.String(80), nullable=False)
+    role = db.Column(db.String(20), nullable=False)
 
     def set_password(self, raw):
         self.password = generate_password_hash(raw)
 
     def check_password(self, raw):
         return check_password_hash(self.password, raw)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -60,20 +63,28 @@ def load_user(user_id):
 
 class RegistrationForm(FlaskForm):
     first_name = StringField('Име', validators=[DataRequired(), Length(1, 80)])
-    last_name  = StringField('Фамилия', validators=[DataRequired(), Length(1, 80)])
-    username   = StringField('Потребителско име', validators=[DataRequired(), Length(4, 80)])
-    password   = PasswordField('Парола', validators=[DataRequired(), Length(6, 200)])
-    role       = SelectField('Роля', choices=[
-                    ('student', 'Студент'),
-                    ('teacher','Преподавател'),
-                    ('admin','Администратор')],
-                    validators=[DataRequired()])
-    submit     = SubmitField('Регистрация')
+    last_name = StringField('Фамилия', validators=[DataRequired(), Length(1, 80)])
+    username = StringField('Потребителско име', validators=[DataRequired(), Length(4, 80)])
+    password = PasswordField('Парола', validators=[DataRequired(), Length(6, 200)])
+
+    confirm_password = PasswordField(
+        'Потвърди парола',
+        validators=[DataRequired(), EqualTo('password', message='Паролите не съвпадат.')]
+    )
+
+    role = SelectField('Роля', choices=[
+        ('student', 'Студент'),
+        ('teacher', 'Преподавател'),
+        ('admin', 'Администратор')],
+                       validators=[DataRequired()]
+                       )
+    submit = SubmitField('Регистрация')
 
 class LoginForm(FlaskForm):
     username = StringField('Потребителско име', validators=[DataRequired()])
     password = PasswordField('Парола', validators=[DataRequired()])
-    submit   = SubmitField('Вход')
+    remember_me = BooleanField('Запомни ме')  # ⬅️ Добави това
+    submit = SubmitField('Вход')
 
 
 # --- Prompt builder ---
@@ -108,10 +119,10 @@ def register():
             form.username.errors.append('Потребителското име вече съществува.')
         else:
             u = User(
-                username   = form.username.data,
-                first_name = form.first_name.data,
-                last_name  = form.last_name.data,
-                role       = form.role.data
+                username=form.username.data,
+                first_name=form.first_name.data,
+                last_name=form.last_name.data,
+                role=form.role.data
             )
             u.set_password(form.password.data)
             db.session.add(u)
@@ -158,8 +169,8 @@ def analyze_log():
     resp = openai_client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role":"system", "content":"You are a cybersecurity teacher and SOC analyst."},
-            {"role":"user",   "content":prompt}
+            {"role": "system", "content": "You are a cybersecurity teacher and SOC analyst."},
+            {"role": "user", "content": prompt}
         ]
     )
     result = resp.choices[0].message.content
@@ -194,7 +205,7 @@ def analyze_all():
         with open(path, "r", encoding="utf-8") as f:
             log = f.read()
         if not log.strip():
-            summary.append({"file":fn, "status":"Skipped"})
+            summary.append({"file": fn, "status": "Skipped"})
             continue
 
         try:
@@ -203,8 +214,8 @@ def analyze_all():
             resp = openai_client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role":"system", "content":"You are a cybersecurity teacher and SOC analyst."},
-                    {"role":"user",   "content":prompt}
+                    {"role": "system", "content": "You are a cybersecurity teacher and SOC analyst."},
+                    {"role": "user", "content": prompt}
                 ]
             )
             result = resp.choices[0].message.content
@@ -219,9 +230,9 @@ def analyze_all():
                 out.write(f"Log:\n{log}\n\n---\nGPT Response:\n{result}")
             export_to_pdf(log, result, pdf_path)
 
-            summary.append({"file":fn, "status":"OK"})
+            summary.append({"file": fn, "status": "OK"})
         except Exception as e:
-            summary.append({"file":fn, "status":f"Error: {e}"})
+            summary.append({"file": fn, "status": f"Error: {e}"})
 
     return jsonify({"summary": summary})
 
@@ -260,6 +271,13 @@ def clear_results():
             except:
                 pass
     return jsonify({"deleted": deleted})
+
+
+@app.route("/forgot-password")
+def forgot_password():
+    return render_template("forgot_password.html")
+
+
 
 
 if __name__ == '__main__':

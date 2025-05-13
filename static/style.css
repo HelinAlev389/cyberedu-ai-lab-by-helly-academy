@@ -1,74 +1,67 @@
 body {
-  background: #1f2330;
-  color: #e4e6eb;
+    background: linear-gradient(135deg, #1f2330, #2a2e3e);
+    color: #e4e6eb;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    margin: 0;
 }
-.card {
-  background: #2a2e3e;
-  color: #e4e6eb;
-}
-.navbar-brand, .nav-link { color: #e4e6eb !important; }
-footer { background: #2C3C83; }
 
+.card {
+    background: #2f3246;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    color: #fff;
+}
 
 h2 {
-    color: #1a1a1a;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #ffffff;
 }
 
-textarea {
-    width: 100%;
-    max-width: 800px;
-    height: 200px;
-    font-family: monospace;
-    padding: 10px;
-    border: 1px solid #ccc;
-    background-color: #fff;
-    resize: vertical;
+.form-control, .form-select {
+    background-color: #1f2330;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 10px;
 }
-
-button {
-    padding: 10px 20px;
-    margin-top: 10px;
-    background-color: #0066cc;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-}
-
-button:hover {
-    background-color: #0052a3;
-}
-
-input[type="file"] {
-    margin-top: 10px;
-}
-
-#result {
-    background-color: #e6f2ff;
-    border-left: 4px solid #3399ff;
-    padding: 10px;
-    margin-top: 20px;
-    white-space: pre-wrap;
-}
-
-
-
-
-
-footer { background: #2C3C83; }
 
 .btn-primary {
-    background-color: #197C85;
-    border-color: #197C85;
+    background-color: #ff00aa;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 30px;
+    font-weight: bold;
+    transition: background 0.3s ease;
 }
 
-.btn-warning {
-    background-color: #F5C054;
-    border-color: #F5C054;
-    color: black;
+.btn-primary:hover {
+    background-color: #ff33bb;
 }
 
-.btn-danger {
-    background-color: #D74042;
-    border-color: #D74042;
+a {
+    color: #00ccff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+footer {
+    background-color: #2C3C83;
+    color: #ccc;
+    text-align: center;
+    padding: 1rem;
+    margin-top: auto;
+}
+
+input::placeholder {
+    color: #888;
+}
+
+.text-center {
+    text-align: center;
 }
