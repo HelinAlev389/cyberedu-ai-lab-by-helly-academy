@@ -7,7 +7,7 @@ import zipfile
 from dotenv import load_dotenv
 from flask import (
     Flask, request, jsonify, render_template,
-    redirect, url_for, send_file
+    redirect, url_for, send_file, flash
 )
 from flask_login import (
     LoginManager, UserMixin,
@@ -273,10 +273,19 @@ def clear_results():
     return jsonify({"deleted": deleted})
 
 
-@app.route("/forgot-password")
-def forgot_password():
-    return render_template("forgot_password.html")
+class ForgotPasswordForm(FlaskForm):
+    username = StringField('Имейл или потребителско име', validators=[DataRequired()])
+    submit = SubmitField('Изпрати линк')
 
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        # Тук можеш да пратиш имейл или да покажеш съобщение
+        flash("Ако съществува акаунт с този имейл/потребителско име, ще получиш линк за нулиране на паролата.", "info")
+        return redirect(url_for('login'))
+    return render_template('forgot_password.html', form=form)
 
 
 
