@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+{% extends "base.html" %}
+{% block content %}
+<h2>Тренировъчна мисия: Failed Login</h2>
+
+<pre id="log">{{ log }}</pre>
+
+<div id="question-box">
+    <p><strong>Въпрос 1:</strong> Какъв тип инцидент е това?</p>
+    <input type="text" id="answer1" class="form-control mb-3">
+    <button class="btn btn-primary" onclick="submitAnswer()">Изпрати</button>
+</div>
+
+<div id="feedback" class="mt-3"></div>
+
+<script>
+function submitAnswer() {
+    const answer = document.getElementById("answer1").value;
+    const log = document.getElementById("log").innerText;
+
+    fetch("/training/feedback", {
+        method: "POST",
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({question: "Какъв тип инцидент е това?", answer: answer, log: log})
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById("feedback").innerText = data.feedback;
+    });
+}
+</script>
+{% endblock %}
+v
+
+</body>
+</html>

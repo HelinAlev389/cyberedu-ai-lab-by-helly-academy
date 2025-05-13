@@ -3,7 +3,7 @@ import os
 import time
 
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
+from flask import Flask, render_template, redirect, url_for, request, jsonify, flash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
@@ -205,6 +205,101 @@ def delete_scenario(name):
         flash("Файлът не съществува.", "danger")
 
     return redirect(url_for("scenarios"))
+
+
+@app.route('/walkthrough-feedback', methods=['POST'])
+@login_required
+def walkthrough_feedback():
+    data = request.json
+    question = data.get("question", "")
+    answer = data.get("answer", "")
+
+    if not question or not answer:
+        return jsonify({"feedback": "Грешка: липсва въпрос или отговор."}), 400
+
+    prompt = f"""
+You are an AI assistant helping a student learn cybersecurity incident analysis.
+Evaluate the following student's answer and provide constructive feedback.
+
+Question: {question}
+Answer: {answer}
+
+Give a short explanation whether the answer is correct or not, and why.
+"""
+
+    resp = openai_client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a SOC analyst trainer."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    feedback = resp.choices[0].message.content
+    return jsonify({"feedback": feedback})
+
+
+@app.route('/walkthrough-summary', methods=['POST'])
+@login_required
+def walkthrough_summary():
+    data = request.json
+    log = data.get("log", "")
+    answers = data.get("answers", {})
+
+    parts = "\n".join([f"Q: {q}\nA: {a}" for q, a in answers.items()])
+    prompt = f"""
+You are an AI SOC Analyst.
+Analyze the following SOC log and user responses to training questions.
+
+SOC Log:
+{log}
+
+Student Answers:
+{parts}
+
+Provide a full analysis including: incident type, risk level, detailed description and a recommendation.
+"""
+
+    resp = openai_client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a cybersecurity trainer."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    result = resp.choices[0].message.content
+    return jsonify({"summary": result})
+
+
+@app.route('/mission/start', methods=['GET'])
+@login_required
+def start_training():
+    with open('logs/01_failed_login.json', 'r', encoding='utf-8') as f:
+        log = f.read()
+    return render_template('mission.html', log=log)
+
+
+@app.route('/mission/feedback', methods=['POST'])
+@login_required
+def training_feedback():
+    data = request.json
+    question = data["question"]
+    answer = data["answer"]
+    log = data["log"]
+
+    prompt = f"""Log:\n{log}
+
+Student's answer to the question: "{question}"
+Answer: {answer}
+
+Give short feedback: Is it correct? Why or why not?"""
+
+    response = openai_client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    feedback = response.choices[0].message.content
+    return jsonify({"feedback": feedback})
 
 
 if __name__ == '__main__':
