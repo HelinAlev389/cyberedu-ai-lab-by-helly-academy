@@ -4,11 +4,10 @@ import json
 import os
 import zipfile
 from collections import Counter
-
 from dotenv import load_dotenv
 from flask import (
     Flask, request, jsonify, render_template,
-    redirect, url_for, send_file, flash, request
+    redirect, url_for, send_file, flash, request, session
 )
 from flask_login import (
     LoginManager, UserMixin,
@@ -22,6 +21,7 @@ from wtforms import StringField, PasswordField, SelectField, SubmitField, Boolea
 from wtforms.validators import DataRequired, Length, EqualTo
 from utils.ctf_missions import MISSIONS
 from utils.pdf_export import export_to_pdf, sanitize_filename
+from utils.save_ctf_response import save_ctf_report
 
 load_dotenv()
 
@@ -459,8 +459,15 @@ def inject_request():
 
 
 @app.route('/admin/users')
+@login_required
 def user_management():
     return render_template('user_management.html')
+
+
+@app.route('/ctf')
+@login_required
+def ctf_overview():
+    return render_template('ctf_overview.html', missions=MISSIONS)
 
 
 @app.route('/ctf/<mission_id>/tier/<tier>', methods=['GET', 'POST'])
@@ -475,18 +482,28 @@ def ctf_mission(mission_id, tier):
     if request.method == 'POST':
         answers = [request.form.get(f'answer{i + 1}') for i in range(len(tier_data["questions"]))]
 
-        # Тук можеш да запишеш отговорите в база, файл или PDF
-        print(f"Отговори от {current_user.username}: {answers}")
+        filename = save_ctf_report(current_user.username, mission_id, tier, answers)
 
-        return redirect(url_for('dashboard'))
+        session['last_ctf_pdf'] = filename  # 📌 Записваме в session
+        flash(f"Успешно записа отговорите! Генериран PDF: {filename}", "success")
+
+        return redirect(url_for('ctf_result'))
 
     return render_template('ctf.html', mission=mission, tier_data=tier_data, tier=tier)
 
 
-@app.route('/ctf')
+@app.route('/ctf-result')
 @login_required
-def ctf_overview():
-    return render_template('ctf_overview.html', missions=MISSIONS)
+def ctf_result():
+    filename = session.get('last_ctf_pdf')
+    return render_template('ctf_result.html', filename=filename)
+
+
+@app.route('/ctf/download/<filename>')
+@login_required
+def download_ctf_pdf(filename):
+    return send_file(os.path.join("results", filename), as_attachment=True)
+
 
 
 if __name__ == '__main__':
