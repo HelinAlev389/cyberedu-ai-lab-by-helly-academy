@@ -1,0 +1,42 @@
+{
+        "timestamp": "2025-05-10T08:34:12Z",
+        "event_type": "login_attempt",
+        "username": "jdoe",
+        "source_ip": "192.168.1.105",
+        "status": "failed"
+    },
+
+    {
+        "timestamp": "2025-05-10T08:35:20Z",
+        "event_type": "login_attempt",
+        "username": "jdoe",
+        "source_ip": "192.168.1.105",
+        "status": "success"
+    },
+    {
+        "timestamp": "2025-05-10T08:36:42Z",
+        "event_type": "process_creation",
+        "process": "powershell.exe",
+        "command_line": "powershell.exe -enc UwB0AGEAcgB0AC0AUAByAG8AYwBlAHMAcwAgACIAQwA6AFwAVQBzAGUAcgBzAFwAUAB1AGIAbABpAGMA"
+    },
+    {
+        "timestamp": "2025-05-10T08:37:10Z",
+        "event_type": "lateral_movement",
+        "tool": "wmic",
+        "target_host": "192.168.1.120",
+        "user": "jdoe"
+    },
+    {
+        "timestamp": "2025-05-10T08:38:55Z",
+        "event_type": "service_installation",
+        "service_name": "RemoteShellService",
+        "path": "C:\\Users\\Public\\remote_shell.exe"
+    },
+    {
+        "timestamp": "2025-05-10T08:40:21Z",
+        "event_type": "network_connection",
+        "destination_ip": "185.100.87.45",
+        "port": 443,
+        "protocol": "HTTPS"
+    }
+]
