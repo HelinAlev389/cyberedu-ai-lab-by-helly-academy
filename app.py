@@ -475,7 +475,7 @@ def ctf_overview():
 
 @app.route('/ctf/<mission_id>/tier/<tier>', methods=['GET', 'POST'])
 @login_required
-def ctf_mission(mission_id, tier):
+def ctf_mission(mission_id, tier, answers=None):
     mission = MISSIONS.get(mission_id)
     if not mission or tier not in mission["tiers"]:
         return "Невалидна мисия или Tier", 404
@@ -488,10 +488,27 @@ def ctf_mission(mission_id, tier):
             flash("Моля, попълни всички отговори преди да предадеш мисията.", "warning")
             return render_template('ctf.html', mission=mission, tier_data=tier_data, tier=tier)
 
+        log_data = None
+        if "log_file" in mission:
+            log_path = os.path.join("instance", "logs", mission["log_file"])
+            try:
+                with open(log_path, encoding="utf-8") as f:
+                    log_data = json.load(f)
+            except Exception as e:
+                flash(f"⚠️ Неуспешно зареждане на лог файл: {e}", "danger")
+        ai_feedback = get_ctf_feedback(
+            current_user.username,
+            mission_id,
+            tier,
+            tier_data["questions"],
+            answers
+        )
+        session['ai_feedback'] = ai_feedback
+
         filename = save_ctf_report(current_user.username, mission_id, tier, answers)
         session['last_ctf_pdf'] = filename
 
-        # вътре във if request.method == 'POST':
+
         if "log_file" in mission:
             log_path = os.path.join("instance", "logs", mission["log_file"])
             try:
@@ -509,6 +526,7 @@ def ctf_mission(mission_id, tier):
             log_data=log_data if "log_data" in locals() else None
         )
         session['ai_feedback'] = ai_feedback
+
 
         points_by_tier = {"1": 10, "2": 20, "3": 30}
         points = points_by_tier.get(tier, 0)
@@ -565,6 +583,26 @@ def leaderboard():
     return render_template("leaderboard.html", scores=scores)
 
 
+@app.route("/ai-chat", methods=["POST"])
+@login_required
+def ai_chat():
+    user_message = request.json.get("message", "")
+    if not user_message:
+        return jsonify({"reply": "Моля въведи въпрос."})
+
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system",
+                 "content": "Ти си приятелски AI асистент, обучаващ студент по SOC анализ и киберсигурност. Отговаряй кратко и разбираемо."},
+                {"role": "user", "content": user_message}
+            ]
+        )
+        reply = response.choices[0].message.content
+        return jsonify({"reply": reply})
+    except Exception as e:
+        return jsonify({"reply": f"⚠️ Грешка: {str(e)}"})
 
 
 if __name__ == "__main__":

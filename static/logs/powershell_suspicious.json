@@ -1,0 +1,9 @@
+{
+  "event_id": 4104,
+  "event_type": "powershell",
+  "provider": "Microsoft-Windows-PowerShell",
+  "timestamp": "2025-05-14T12:42:10Z",
+  "user": "lab_user",
+  "host": "WIN-CTF001",
+  "script_block_text": "powershell.exe -nop -w hidden -enc JABXAG8AbgBkAG8AdwAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBXAGkAbgBkAG8AdwBzAC4AUwBoAGUAbABsAC4AUwBoAGUAbABsAFcAaQBuAGQAbwB3AA=="
+}
