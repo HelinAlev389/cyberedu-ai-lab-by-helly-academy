@@ -15,4 +15,15 @@
     <button type="submit" class="btn btn-primary">Изпрати</button>
   </form>
 </div>
+
+
+{% if mission.log_file %}
+  <div class="alert alert-secondary">
+    <strong>📂 Лог файл за анализ:</strong> <code>{{ mission.log_file }}</code><br>
+    <a class="btn btn-sm btn-outline-primary mt-2"
+       href="{{ url_for('static', filename='logs/' ~ mission.log_file) }}"
+       download>⬇️ Изтегли лог</a>
+  </div>
+{% endif %}
+
 {% endblock %}

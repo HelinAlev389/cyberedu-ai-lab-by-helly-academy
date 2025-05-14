@@ -4,10 +4,11 @@ import json
 import os
 import zipfile
 from collections import Counter
+
 from dotenv import load_dotenv
 from flask import (
     Flask, request, jsonify, render_template,
-    redirect, url_for, send_file, flash, request, session
+    redirect, url_for, send_file, flash, session
 )
 from flask_login import (
     LoginManager, UserMixin,
@@ -22,6 +23,7 @@ from wtforms.validators import DataRequired, Length, EqualTo
 from utils.ctf_missions import MISSIONS
 from utils.pdf_export import export_to_pdf, sanitize_filename
 from utils.save_ctf_response import save_ctf_report
+from utils.ai_feedback import get_ctf_feedback
 
 load_dotenv()
 
@@ -313,8 +315,9 @@ def siem_analyze():
     filepath = os.path.join(logs_path, logfile)
 
     try:
-        with open(filepath) as f:
+        with open(filepath, encoding="utf-8") as f:
             data = json.load(f)
+
 
         if isinstance(data, dict):
             data = [data]
@@ -481,11 +484,32 @@ def ctf_mission(mission_id, tier):
 
     if request.method == 'POST':
         answers = [request.form.get(f'answer{i + 1}') for i in range(len(tier_data["questions"]))]
+        if not all(answers):
+            flash("Моля, попълни всички отговори преди да предадеш мисията.", "warning")
+            return render_template('ctf.html', mission=mission, tier_data=tier_data, tier=tier)
 
         filename = save_ctf_report(current_user.username, mission_id, tier, answers)
         session['last_ctf_pdf'] = filename
 
-        # 🎯 Точки по Tier
+        # вътре във if request.method == 'POST':
+        if "log_file" in mission:
+            log_path = os.path.join("instance", "logs", mission["log_file"])
+            try:
+                with open(log_path, encoding="utf-8") as f:
+                    log_data = json.load(f)
+            except Exception as e:
+                flash(f"⚠️ Неуспешно зареждане на лог файл: {e}", "danger")
+
+        ai_feedback = get_ctf_feedback(
+            current_user.username,
+            mission_id,
+            tier,
+            tier_data["questions"],
+            answers,
+            log_data=log_data if "log_data" in locals() else None
+        )
+        session['ai_feedback'] = ai_feedback
+
         points_by_tier = {"1": 10, "2": 20, "3": 30}
         points = points_by_tier.get(tier, 0)
 
@@ -539,6 +563,8 @@ def leaderboard():
     )
 
     return render_template("leaderboard.html", scores=scores)
+
+
 
 
 if __name__ == "__main__":
