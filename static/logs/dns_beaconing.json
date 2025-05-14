@@ -1,0 +1,27 @@
+[
+  {
+    "event_type": "dns_query",
+    "timestamp": "2025-05-14T07:00:12Z",
+    "host": "workstation01",
+    "query": "fhd8sa92j3ds.malicious-dns.com"
+  },
+  {
+    "event_type": "dns_query",
+    "timestamp": "2025-05-14T07:05:12Z",
+    "host": "workstation01",
+    "query": "fhd8sa92j3ds.malicious-dns.com"
+  },
+  {
+    "event_type": "dns_query",
+    "timestamp": "2025-05-14T07:10:12Z",
+    "host": "workstation01",
+    "query": "fhd8sa92j3ds.malicious-dns.com"
+  },
+  {
+    "event_type": "http_request",
+    "timestamp": "2025-05-14T07:11:02Z",
+    "host": "workstation01",
+    "destination_ip": "185.222.202.111",
+    "url": "http://malicious-dns.com/beacon"
+  }
+]

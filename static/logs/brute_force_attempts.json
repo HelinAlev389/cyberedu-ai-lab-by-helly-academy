@@ -1,0 +1,49 @@
+[
+  {
+    "event_id": 4625,
+    "event_type": "failed_login",
+    "timestamp": "2025-05-14T08:10:31Z",
+    "user": "administrator",
+    "ip_address": "192.168.1.50",
+    "failure_reason": "Unknown user name or bad password"
+  },
+  {
+    "event_id": 4625,
+    "event_type": "failed_login",
+    "timestamp": "2025-05-14T08:11:12Z",
+    "user": "administrator",
+    "ip_address": "192.168.1.50",
+    "failure_reason": "Unknown user name or bad password"
+  },
+  {
+    "event_id": 4625,
+    "event_type": "failed_login",
+    "timestamp": "2025-05-14T08:12:47Z",
+    "user": "administrator",
+    "ip_address": "192.168.1.50",
+    "failure_reason": "Unknown user name or bad password"
+  },
+  {
+    "event_id": 4625,
+    "event_type": "failed_login",
+    "timestamp": "2025-05-14T08:14:03Z",
+    "user": "administrator",
+    "ip_address": "192.168.1.50",
+    "failure_reason": "Unknown user name or bad password"
+  },
+  {
+    "event_id": 4625,
+    "event_type": "failed_login",
+    "timestamp": "2025-05-14T08:15:44Z",
+    "user": "administrator",
+    "ip_address": "192.168.1.50",
+    "failure_reason": "Unknown user name or bad password"
+  },
+  {
+    "event_id": 4624,
+    "event_type": "login_success",
+    "timestamp": "2025-05-14T08:16:30Z",
+    "user": "administrator",
+    "ip_address": "192.168.1.50"
+  }
+]

@@ -3,6 +3,7 @@ from flask import render_template
 MISSIONS = {
     "CTF-SOC-001": {
         "title": "Подозрително PowerShell изпълнение",
+        "log_file": "powershell_suspicious.json",
         "tiers": {
             "1": {
                 "description": "Прегледай алармата, потвърди дали е фалшива, идентифицирай основни IOC.",
@@ -32,6 +33,7 @@ MISSIONS = {
     },
     "CTF-SOC-002": {
         "title": "Brute Force Атака по пароли",
+        "log_file": "brute_force_attempts.json",
         "tiers": {
             "1": {
                 "description": "Разгледай failed logins и посочи дали има аномалия.",
@@ -61,6 +63,7 @@ MISSIONS = {
     },
     "CTF-SOC-003": {
         "title": "Аномален DNS трафик към C2 сървър",
+        "log_file": "dns_beaconing.json",
         "tiers": {
             "1": {
                 "description": "Прегледай DNS заявки и посочи необичаен домейн.",

@@ -482,13 +482,27 @@ def ctf_mission(mission_id, tier, answers=None):
 
     if request.method == 'POST':
         answers = [request.form.get(f'answer{i + 1}') for i in range(len(tier_data["questions"]))]
-        ai_feedback = get_ctf_feedback(current_user.username, mission_id, tier, tier_data["questions"], answers)
+
+        log_data = None
+        if "log_file" in mission:
+            log_path = os.path.join("instance", "logs", mission["log_file"])
+            try:
+                with open(log_path, encoding="utf-8") as f:
+                    log_data = json.load(f)
+            except Exception as e:
+                flash(f"⚠️ Неуспешно зареждане на лог файл: {e}", "danger")
+        ai_feedback = get_ctf_feedback(
+            current_user.username,
+            mission_id,
+            tier,
+            tier_data["questions"],
+            answers
+        )
         session['ai_feedback'] = ai_feedback
 
         filename = save_ctf_report(current_user.username, mission_id, tier, answers)
         session['last_ctf_pdf'] = filename
 
-        # 🎯 Точки по Tier
         points_by_tier = {"1": 10, "2": 20, "3": 30}
         points = points_by_tier.get(tier, 0)
 
