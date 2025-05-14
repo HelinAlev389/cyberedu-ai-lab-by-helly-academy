@@ -1,24 +1,15 @@
-def get_ctf_feedback(username, mission_id, tier, questions, answers, log_data=None):
-    feedback = []
-
-    for i, (q, a) in enumerate(zip(questions, answers)):
-        fb = f"{i + 1}. Въпрос: {q}\nОтговор: {a}\nАнализ: TODO - AI ще анализира това."
-        feedback.append(fb)
-
-    if log_data:
-        feedback.append("\n🔍 Допълнителен анализ на лог файл:\n")
-        feedback.append(str(log_data))  # в реално приложение - формат и анализ
-
-    return "\n\n".join(feedback)
+# utils/ai_feedback.py
+import json
 import os
 from openai import OpenAI
+from dotenv import load_dotenv
 
-def get_ctf_feedback(username, mission_id, tier, questions, answers):
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # ✅ зарежда се когато трябва
+load_dotenv()  # Зарежда .env преди достъп до ключа
 
-    joined = "\n".join([
-        f"{i+1}. {q}\nОтговор: {a}" for i, (q, a) in enumerate(zip(questions, answers))
-    ])
+def get_ctf_feedback(username, mission_id, tier, questions, answers, log_data=None):
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # ← вътре във функцията!
+
+    joined = "\n".join([f"{i+1}. {q}\nОтговор: {a}" for i, (q, a) in enumerate(zip(questions, answers))])
 
     prompt = f"""
 Ти си SOC инструктор. Студентът {username} е попълнил мисия {mission_id} - Tier {tier}.
@@ -32,6 +23,10 @@ def get_ctf_feedback(username, mission_id, tier, questions, answers):
 - Обърни внимание на пропуски.
 - Напиши на български с приятелски тон.
 """
+
+    if log_data:
+        prompt += "\n\nДопълнителна информация от лог файл:\n"
+        prompt += json.dumps(log_data, indent=2, ensure_ascii=False)
 
     response = client.chat.completions.create(
         model="gpt-4",

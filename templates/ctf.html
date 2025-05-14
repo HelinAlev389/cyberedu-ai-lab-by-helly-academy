@@ -5,6 +5,25 @@
   <h2>CTF Мисия: {{ mission["title"] }}</h2>
   <p><strong>Tier {{ tier }}:</strong> {{ tier_data["description"] }}</p>
 
+  {% if mission.log_file %}
+  <div class="alert alert-secondary">
+    <strong>📂 Лог файл за анализ:</strong> <code>{{ mission.log_file }}</code><br>
+    <a class="btn btn-sm btn-outline-primary mt-2"
+       href="{{ url_for('static', filename='logs/' ~ mission.log_file) }}"
+       download>⬇️ Изтегли лог</a>
+  </div>
+
+{% if log_data %}
+<div class="mt-4">
+    <h5>🔍 Преглед на лог съдържанието</h5>
+    <pre class="bg-dark text-white p-3 rounded" style="max-height: 400px; overflow-y: scroll;">
+{{ log_data | tojson(indent=2) }}
+    </pre>
+</div>
+{% endif %}
+
+
+
   <form method="post">
     {% for q in tier_data["questions"] %}
       <div class="mb-3">
@@ -17,13 +36,6 @@
 </div>
 
 
-{% if mission.log_file %}
-  <div class="alert alert-secondary">
-    <strong>📂 Лог файл за анализ:</strong> <code>{{ mission.log_file }}</code><br>
-    <a class="btn btn-sm btn-outline-primary mt-2"
-       href="{{ url_for('static', filename='logs/' ~ mission.log_file) }}"
-       download>⬇️ Изтегли лог</a>
-  </div>
 {% endif %}
 
 {% endblock %}

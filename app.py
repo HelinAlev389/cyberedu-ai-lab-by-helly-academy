@@ -318,7 +318,6 @@ def siem_analyze():
         with open(filepath, encoding="utf-8") as f:
             data = json.load(f)
 
-
         if isinstance(data, dict):
             data = [data]
         elif not isinstance(data, list):
@@ -484,6 +483,7 @@ def ctf_mission(mission_id, tier, answers=None):
 
     if request.method == 'POST':
         answers = [request.form.get(f'answer{i + 1}') for i in range(len(tier_data["questions"]))]
+
         if not all(answers):
             flash("Моля, попълни всички отговори преди да предадеш мисията.", "warning")
             return render_template('ctf.html', mission=mission, tier_data=tier_data, tier=tier)
@@ -496,37 +496,20 @@ def ctf_mission(mission_id, tier, answers=None):
                     log_data = json.load(f)
             except Exception as e:
                 flash(f"⚠️ Неуспешно зареждане на лог файл: {e}", "danger")
-        ai_feedback = get_ctf_feedback(
-            current_user.username,
-            mission_id,
-            tier,
-            tier_data["questions"],
-            answers
-        )
-        session['ai_feedback'] = ai_feedback
 
-        filename = save_ctf_report(current_user.username, mission_id, tier, answers)
-        session['last_ctf_pdf'] = filename
-
-
-        if "log_file" in mission:
-            log_path = os.path.join("instance", "logs", mission["log_file"])
-            try:
-                with open(log_path, encoding="utf-8") as f:
-                    log_data = json.load(f)
-            except Exception as e:
-                flash(f"⚠️ Неуспешно зареждане на лог файл: {e}", "danger")
-
+        # 🧠 AI Feedback (с log_data, ако е наличен)
         ai_feedback = get_ctf_feedback(
             current_user.username,
             mission_id,
             tier,
             tier_data["questions"],
             answers,
-            log_data=log_data if "log_data" in locals() else None
+            log_data=log_data
         )
         session['ai_feedback'] = ai_feedback
 
+        filename = save_ctf_report(current_user.username, mission_id, tier, answers)
+        session['last_ctf_pdf'] = filename
 
         points_by_tier = {"1": 10, "2": 20, "3": 30}
         points = points_by_tier.get(tier, 0)
@@ -543,7 +526,16 @@ def ctf_mission(mission_id, tier, answers=None):
         flash(f"CTF приключена! Точки: {points} | Генериран PDF: {filename}", "success")
         return redirect(url_for('ctf_result'))
 
-    return render_template('ctf.html', mission=mission, tier_data=tier_data, tier=tier)
+    log_data = None
+    if "log_file" in mission:
+        log_path = os.path.join("instance", "logs", mission["log_file"])
+        try:
+            with open(log_path, encoding="utf-8") as f:
+                log_data = json.load(f)
+        except Exception as e:
+            flash(f"⚠️ Неуспешно зареждане на лог файл: {e}", "danger")
+
+    return render_template('ctf.html', mission=mission, tier_data=tier_data, tier=tier, log_data=log_data)
 
 
 @app.route('/ctf-result')
