@@ -12,7 +12,7 @@ from flask import (
 )
 from flask_login import (
     LoginManager, UserMixin,
-    login_user, logout_user, login_required
+    login_user, logout_user, login_required, current_user
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
@@ -54,7 +54,7 @@ class User(db.Model, UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 
 # --- Forms ---
@@ -446,6 +446,19 @@ def export_siem_pdf():
         flash(f"Грешка при генериране на PDF: {str(e)}", "danger")
         return redirect(url_for("siem_dashboard"))
 
+
+from flask_login import login_required, current_user
+
+
+@app.route('/profile')
+@login_required
+def profile():
+    return render_template('profile.html', user=current_user)
+
+
+@app.context_processor
+def inject_request():
+    return dict(request=request)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Моят профил{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+
+<div class="card profile-card mx-auto" style="max-width: 500px;">
+  <div class="card-body text-center">
+    <i class="fas fa-user-circle fa-4x mb-3 text-primary"></i>
+    <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+    <p class="text-muted">@{{ user.username }}</p>
+    <hr>
+    <p><strong>Роля:</strong> {{ user.role|capitalize }}</p>
+    <p><strong>Email:</strong> [тук можеш да добавиш email ако го имаш]</p>
+    <a href="#" class="btn btn-primary mt-3 disabled">Редактирай профил (скоро)</a>
+  </div>
+</div>
+{% endblock %}
