@@ -22,6 +22,7 @@ from wtforms.validators import DataRequired, Length, EqualTo
 from utils.ctf_missions import MISSIONS
 from utils.pdf_export import export_to_pdf, sanitize_filename
 from utils.save_ctf_response import save_ctf_report
+from utils.ai_feedback import get_ctf_feedback
 
 load_dotenv()
 
@@ -472,7 +473,7 @@ def ctf_overview():
 
 @app.route('/ctf/<mission_id>/tier/<tier>', methods=['GET', 'POST'])
 @login_required
-def ctf_mission(mission_id, tier):
+def ctf_mission(mission_id, tier, answers=None):
     mission = MISSIONS.get(mission_id)
     if not mission or tier not in mission["tiers"]:
         return "Невалидна мисия или Tier", 404
@@ -481,6 +482,8 @@ def ctf_mission(mission_id, tier):
 
     if request.method == 'POST':
         answers = [request.form.get(f'answer{i + 1}') for i in range(len(tier_data["questions"]))]
+        ai_feedback = get_ctf_feedback(current_user.username, mission_id, tier, tier_data["questions"], answers)
+        session['ai_feedback'] = ai_feedback
 
         filename = save_ctf_report(current_user.username, mission_id, tier, answers)
         session['last_ctf_pdf'] = filename
@@ -539,6 +542,28 @@ def leaderboard():
     )
 
     return render_template("leaderboard.html", scores=scores)
+
+
+@app.route("/ai-chat", methods=["POST"])
+@login_required
+def ai_chat():
+    user_message = request.json.get("message", "")
+    if not user_message:
+        return jsonify({"reply": "Моля въведи въпрос."})
+
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system",
+                 "content": "Ти си приятелски AI асистент, обучаващ студент по SOC анализ и киберсигурност. Отговаряй кратко и разбираемо."},
+                {"role": "user", "content": user_message}
+            ]
+        )
+        reply = response.choices[0].message.content
+        return jsonify({"reply": reply})
+    except Exception as e:
+        return jsonify({"reply": f"⚠️ Грешка: {str(e)}"})
 
 
 if __name__ == "__main__":

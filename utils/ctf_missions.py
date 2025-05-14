@@ -1,3 +1,5 @@
+from flask import render_template
+
 MISSIONS = {
     "CTF-SOC-001": {
         "title": "Подозрително PowerShell изпълнение",
@@ -87,3 +89,4 @@ MISSIONS = {
         }
     }
 }
+
