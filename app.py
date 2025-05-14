@@ -483,10 +483,22 @@ def ctf_mission(mission_id, tier):
         answers = [request.form.get(f'answer{i + 1}') for i in range(len(tier_data["questions"]))]
 
         filename = save_ctf_report(current_user.username, mission_id, tier, answers)
+        session['last_ctf_pdf'] = filename
 
-        session['last_ctf_pdf'] = filename  # 📌 Записваме в session
-        flash(f"Успешно записа отговорите! Генериран PDF: {filename}", "success")
+        # 🎯 Точки по Tier
+        points_by_tier = {"1": 10, "2": 20, "3": 30}
+        points = points_by_tier.get(tier, 0)
 
+        result = CTFResult(
+            username=current_user.username,
+            mission_id=mission_id,
+            tier=tier,
+            points=points
+        )
+        db.session.add(result)
+        db.session.commit()
+
+        flash(f"CTF приключена! Точки: {points} | Генериран PDF: {filename}", "success")
         return redirect(url_for('ctf_result'))
 
     return render_template('ctf.html', mission=mission, tier_data=tier_data, tier=tier)
@@ -505,8 +517,32 @@ def download_ctf_pdf(filename):
     return send_file(os.path.join("results", filename), as_attachment=True)
 
 
+class CTFResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), nullable=False)
+    mission_id = db.Column(db.String(80), nullable=False)
+    tier = db.Column(db.String(10), nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
-if __name__ == '__main__':
+
+@app.route("/leaderboard")
+@login_required
+def leaderboard():
+    from sqlalchemy import func
+
+    scores = (
+        db.session.query(CTFResult.username, func.sum(CTFResult.points).label("total_points"))
+        .group_by(CTFResult.username)
+        .order_by(func.sum(CTFResult.points).desc())
+        .all()
+    )
+
+    return render_template("leaderboard.html", scores=scores)
+
+
+if __name__ == "__main__":
     with app.app_context():
         db.create_all()
+    print("✅ Таблиците са създадени.")
     app.run(debug=True)
