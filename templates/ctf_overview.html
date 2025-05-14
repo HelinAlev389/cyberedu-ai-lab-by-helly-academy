@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Всички CTF Мисии</h2>
+  <ul class="list-group">
+    {% for mission_id, mission in missions.items() %}
+      <li class="list-group-item">
+        <h5>{{ mission.title }}</h5>
+        <div>
+          {% for tier in mission.tiers.keys() %}
+            <a class="btn btn-outline-primary btn-sm me-2 mt-2"
+               href="{{ url_for('ctf_mission', mission_id=mission_id, tier=tier) }}">
+              Играй като Tier {{ tier }}
+            </a>
+          {% endfor %}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

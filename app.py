@@ -8,7 +8,7 @@ from collections import Counter
 from dotenv import load_dotenv
 from flask import (
     Flask, request, jsonify, render_template,
-    redirect, url_for, send_file, flash
+    redirect, url_for, send_file, flash, request
 )
 from flask_login import (
     LoginManager, UserMixin,
@@ -20,7 +20,7 @@ from openai import OpenAI
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SelectField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Length, EqualTo
-
+from utils.ctf_missions import MISSIONS
 from utils.pdf_export import export_to_pdf, sanitize_filename
 
 load_dotenv()
@@ -447,9 +447,6 @@ def export_siem_pdf():
         return redirect(url_for("siem_dashboard"))
 
 
-from flask_login import login_required, current_user
-
-
 @app.route('/profile')
 @login_required
 def profile():
@@ -459,6 +456,37 @@ def profile():
 @app.context_processor
 def inject_request():
     return dict(request=request)
+
+
+@app.route('/admin/users')
+def user_management():
+    return render_template('user_management.html')
+
+
+@app.route('/ctf/<mission_id>/tier/<tier>', methods=['GET', 'POST'])
+@login_required
+def ctf_mission(mission_id, tier):
+    mission = MISSIONS.get(mission_id)
+    if not mission or tier not in mission["tiers"]:
+        return "Невалидна мисия или Tier", 404
+
+    tier_data = mission["tiers"][tier]
+
+    if request.method == 'POST':
+        answers = [request.form.get(f'answer{i + 1}') for i in range(len(tier_data["questions"]))]
+
+        # Тук можеш да запишеш отговорите в база, файл или PDF
+        print(f"Отговори от {current_user.username}: {answers}")
+
+        return redirect(url_for('dashboard'))
+
+    return render_template('ctf.html', mission=mission, tier_data=tier_data, tier=tier)
+
+
+@app.route('/ctf')
+@login_required
+def ctf_overview():
+    return render_template('ctf_overview.html', missions=MISSIONS)
 
 
 if __name__ == '__main__':
