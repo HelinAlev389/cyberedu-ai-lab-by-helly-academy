@@ -8,7 +8,7 @@ from collections import Counter
 from dotenv import load_dotenv
 from flask import (
     Flask, request, jsonify, render_template,
-    redirect, url_for, send_file, flash
+    redirect, url_for, send_file, flash, session
 )
 from flask_login import (
     LoginManager, UserMixin,
@@ -21,7 +21,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SelectField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Length, EqualTo
 
+from utils.ctf_missions import MISSIONS
 from utils.pdf_export import export_to_pdf, sanitize_filename
+
+from utils.save_ctf_response import save_ctf_report
+from utils.ai_feedback import get_ctf_feedback
+from utils.walkthroughs import WALKTHROUGHS
 
 load_dotenv()
 
@@ -276,8 +281,8 @@ def clear_results():
             try:
                 os.remove(os.path.join("results", f))
                 deleted.append(f)
-            except:
-                pass
+            except Exception as e:
+                app.logger.warning(f"Неуспешно изтриване: {f} | {e}")
     return jsonify({"deleted": deleted})
 
 
@@ -447,9 +452,6 @@ def export_siem_pdf():
         return redirect(url_for("siem_dashboard"))
 
 
-from flask_login import login_required, current_user
-
-
 @app.route('/profile')
 @login_required
 def profile():
@@ -461,7 +463,201 @@ def inject_request():
     return dict(request=request)
 
 
-if __name__ == '__main__':
+@app.route('/admin/users')
+@login_required
+def user_management():
+    return render_template('user_management.html')
+
+
+@app.route('/ctf')
+@login_required
+def ctf_overview():
+    return render_template('ctf_overview.html', missions=MISSIONS)
+
+
+@app.route('/ctf/<mission_id>/tier/<tier>', methods=['GET', 'POST'])
+@login_required
+def ctf_mission(mission_id, tier, answers=None):
+    mission = MISSIONS.get(mission_id)
+    if not mission or tier not in mission["tiers"]:
+        return "Невалидна мисия или Tier", 404
+
+    tier_data = mission["tiers"][tier]
+
+    if request.method == 'POST':
+        answers = [request.form.get(f'answer{i + 1}') for i in range(len(tier_data["questions"]))]
+
+        if not all(answers):
+            flash("Моля, попълни всички отговори преди да предадеш мисията.", "warning")
+            return render_template('ctf.html', mission=mission, tier_data=tier_data, tier=tier)
+
+        log_data = None
+        if "log_file" in mission:
+            log_path = os.path.join("instance", "logs", mission["log_file"])
+            try:
+                with open(log_path, encoding="utf-8") as f:
+                    log_data = json.load(f)
+            except Exception as e:
+                flash(f"⚠️ Неуспешно зареждане на лог файл: {e}", "danger")
+
+        # 🧠 AI Feedback (с log_data, ако е наличен)
+        ai_feedback = get_ctf_feedback(
+            current_user.username,
+            mission_id,
+            tier,
+            tier_data["questions"],
+            answers,
+            log_data=log_data
+        )
+        session['ai_feedback'] = ai_feedback
+
+        filename = save_ctf_report(current_user.username, mission_id, tier, answers)
+        session['last_ctf_pdf'] = filename
+
+        points_by_tier = {"1": 10, "2": 20, "3": 30}
+        points = points_by_tier.get(tier, 0)
+
+        result = CTFResult(
+            username=current_user.username,
+            mission_id=mission_id,
+            tier=tier,
+            points=points
+        )
+        db.session.add(result)
+        db.session.commit()
+
+        flash(f"CTF приключена! Точки: {points} | Генериран PDF: {filename}", "success")
+        return redirect(url_for('ctf_result'))
+
+    log_data = None
+    if "log_file" in mission:
+        log_path = os.path.join("instance", "logs", mission["log_file"])
+        try:
+            with open(log_path, encoding="utf-8") as f:
+                log_data = json.load(f)
+        except Exception as e:
+            flash(f"⚠️ Неуспешно зареждане на лог файл: {e}", "danger")
+
+    return render_template('ctf.html', mission=mission, tier_data=tier_data, tier=tier, log_data=log_data)
+
+
+@app.route('/ctf-result')
+@login_required
+def ctf_result():
+    filename = session.get('last_ctf_pdf')
+    return render_template('ctf_result.html', filename=filename)
+
+
+@app.route('/ctf/download/<filename>')
+@login_required
+def download_ctf_pdf(filename):
+    return send_file(os.path.join("results", filename), as_attachment=True)
+
+
+class CTFResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), nullable=False)
+    mission_id = db.Column(db.String(80), nullable=False)
+    tier = db.Column(db.String(10), nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+
+@app.route("/leaderboard")
+@login_required
+def leaderboard():
+    from sqlalchemy import func
+
+    scores = (
+        db.session.query(CTFResult.username, func.sum(CTFResult.points).label("total_points"))
+        .group_by(CTFResult.username)
+        .order_by(func.sum(CTFResult.points).desc())
+        .all()
+    )
+
+    return render_template("leaderboard.html", scores=scores)
+
+
+@app.route("/ai-chat", methods=["POST"])
+@login_required
+def ai_chat():
+    user_message = request.json.get("message", "")
+    if not user_message:
+        return jsonify({"reply": "Моля въведи въпрос."})
+
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system",
+                 "content": "Ти си приятелски AI асистент, обучаващ студент по SOC анализ и киберсигурност. Отговаряй кратко и разбираемо."},
+                {"role": "user", "content": user_message}
+            ]
+        )
+        reply = response.choices[0].message.content
+        return jsonify({"reply": reply})
+    except Exception as e:
+        return jsonify({"reply": f"⚠️ Грешка: {str(e)}"})
+
+
+@app.route("/walkthroughs")
+@login_required
+def walkthrough_list():
+    return render_template("walkthrough_list.html", walkthroughs=WALKTHROUGHS)
+
+
+@app.route("/walkthrough/<walk_id>")
+@login_required
+def walkthrough(walk_id):
+    walkthrough = WALKTHROUGHS.get(walk_id)
+    if not walkthrough:
+        flash("Невалиден walkthrough ID.", "danger")
+        return redirect(url_for("dashboard"))
+
+    log_data = None
+    if walkthrough.get("log_file"):
+        try:
+            path = os.path.join("instance", "logs", walkthrough["log_file"])
+            with open(path, encoding="utf-8") as f:
+                log_data = json.load(f)
+        except Exception as e:
+            flash(f"⚠️ Неуспешно зареждане на лог файл: {e}", "danger")
+
+    return render_template("walkthrough.html",
+                           scenario=walkthrough,
+                           log_data=log_data)
+
+
+@app.route("/ai-walkthrough-feedback", methods=["POST"])
+@login_required
+def ai_walkthrough_feedback():
+    data = request.get_json()
+    answers = data.get("answers", [])
+
+    if not answers or not isinstance(answers, list):
+        return jsonify({"feedback": "⚠️ Няма подадени отговори."})
+
+    try:
+        prompt = "Студентът предостави следните отговори по време на инцидентен анализ:\n\n"
+        for i, ans in enumerate(answers, 1):
+            prompt += f"{i}. {ans}\n"
+
+        prompt += "\nДай кратка оценка на всеки отговор и обща оценка от 1 до 10.\nИзползвай ясен и приятелски тон на български."
+
+        response = openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Ти си инструктор по киберсигурност, който дава обратна връзка."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        ai_feedback = response.choices[0].message.content
+        return jsonify({"feedback": ai_feedback})
+    except Exception as e:
+        return jsonify({"feedback": f"Грешка от AI: {str(e)}"})
+
+
+if __name__ == "__main__":
     with app.app_context():
         db.create_all()
     app.run(debug=True)

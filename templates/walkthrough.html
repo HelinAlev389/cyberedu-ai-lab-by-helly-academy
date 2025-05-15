@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>{{ scenario.title }}</h2>
+  <p>{{ scenario.description }}</p>
+
+  {% if log_data %}
+    <pre><code>{{ log_data | tojson(indent=2) }}</code></pre>
+  {% endif %}
+
+  <!-- Може да добавиш секция за въпроси/отговори тук -->
+{% endblock %}

