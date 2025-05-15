@@ -1,5 +1,7 @@
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.units import mm
 import os
 import datetime
@@ -11,54 +13,56 @@ def sanitize_filename(name: str) -> str:
     return re.sub(r'[^\w\-_.]', '_', name)
 
 
-
 def export_to_pdf(log_text: str, gpt_response: str, filename: str):
     os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+    # ✅ Регистрация на шрифт с кирилица
+    font_path = os.path.join("static", "fonts", "DejaVuSans.ttf")
+    if not os.path.exists(font_path):
+        raise FileNotFoundError(f"❌ Шрифтът не е намерен: {font_path}")
+
+    pdfmetrics.registerFont(TTFont("DejaVu", font_path))
+
     c = canvas.Canvas(filename, pagesize=A4)
     width, height = A4
     y = height - 40
 
     # Заглавие
-    c.setFont("Helvetica-Bold", 14)
+    c.setFont("DejaVu", 14)
     c.drawString(40, y, "CyberEdu AI SOC Report")
     y -= 30
 
-    # 🖼 Добави лого (по избор — ако имаш .png файл)
-    # try:
-    #     c.drawImage("static/assets/logo.png", width - 120, height - 70, width=70, preserveAspectRatio=True)
-    # except:
-    #     pass  # ако няма логото, не крашваме
-
-    # Log Section
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(40, y, "Log:")
+    # Лог секция
+    c.setFont("DejaVu", 11)
+    c.drawString(40, y, "Лог или входни данни:")
     y -= 20
 
-    c.setFont("Courier", 9)
+    c.setFont("DejaVu", 9)
     for line in log_text.splitlines():
         c.drawString(40, y, line)
         y -= 12
         if y < 70:
             draw_footer(c, width)
             c.showPage()
+            c.setFont("DejaVu", 9)
             y = height - 40
 
-    # AI Analysis
+    # AI анализ
     y -= 10
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(40, y, "GPT Analysis:")
+    c.setFont("DejaVu", 11)
+    c.drawString(40, y, "🧠 AI анализ:")
     y -= 20
 
-    c.setFont("Helvetica", 10)
+    c.setFont("DejaVu", 10)
     for line in gpt_response.splitlines():
         c.drawString(40, y, line)
         y -= 13
         if y < 70:
             draw_footer(c, width)
             c.showPage()
+            c.setFont("DejaVu", 10)
             y = height - 40
 
-    # Финален футър
     draw_footer(c, width)
     c.save()
 

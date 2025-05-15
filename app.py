@@ -657,6 +657,30 @@ def ai_walkthrough_feedback():
         return jsonify({"feedback": f"Грешка от AI: {str(e)}"})
 
 
+@app.route("/walkthrough-pdf", methods=["POST"])
+@login_required
+def walkthrough_pdf():
+    data = request.get_json()
+    steps = data.get("steps", [])
+    answers = data.get("answers", [])
+    feedback = data.get("feedback", "")
+
+    if not steps or not answers:
+        return "Missing data", 400
+
+    content = ""
+    for i, (step, answer) in enumerate(zip(steps, answers), 1):
+        content += f"{i}. {step}\nОтговор: {answer}\n\n"
+
+    content += "\n---\nAI обратна връзка:\n" + feedback
+
+    filename = f"results/walkthrough_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    os.makedirs("results", exist_ok=True)
+    export_to_pdf(content, "", filename)
+
+    return send_file(filename, as_attachment=True)
+
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
