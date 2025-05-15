@@ -1,40 +1,55 @@
 # 🧠 CyberEdu AI Lab by Helly Academy
 
-**CyberEdu AI Lab** is an educational web platform designed for students and learners in cybersecurity. It leverages **OpenAI GPT models** to analyze real-world SOC logs, explain them in plain language, and offer actionable mitigation and prevention advice.
+**CyberEdu AI Lab** е образователна уеб платформа за студенти и обучаващи се в сферата на киберсигурността. Тя използва **OpenAI GPT модели**, за да анализира реални SOC логове, да ги обяснява на разбираем език и да дава конкретни препоръки.
 
 ---
 
-## 🚀 Core Features
+## 🚀 Основни функционалности
 
-- 🔐 Secure login system (Flask-Login)  
-- 📥 SOC log analysis powered by OpenAI GPT-4  
-- 📂 Batch analysis of `.json` logs from the `logs/` folder  
-- 📄 PDF report generation  
-- 📦 Download ZIP archive of all analysis results  
-- 🗑 Clear old results with one click  
-- 🎨 Clean Bootstrap 5 UI styled by Helly Academy  
+- 🔐 Сигурна система за вход (Flask-Login)  
+- 📥 AI анализ на SOC логове чрез GPT-4  
+- 📂 Масов анализ на `.json` логове от директория  
+- 📄 Генериране на PDF репорти с поддръжка на кирилица  
+- 📦 ZIP експорт на всички резултати  
+- 🗑 Изчистване на стари репорти с един клик  
+- 🎨 Чист Bootstrap 5 интерфейс, стил Helly Academy  
+- 📊 SIEM Dashboard с диаграми и визуализация  
+- 🧠 Walkthrough модул със стъпково решаване  
+- 📝 AI обратна връзка и оценка на решения  
+- 🧾 Автоматично генериране на walkthrough репорти  
+- 🏅 Нива, точки и сертификат при завършен курс  
 
 ---
 
 ## 🛡️ CyberEdu AI SIEM Dashboard
 
-An interactive visual module designed to help learners analyze and interpret security logs. Students and instructors can upload logs, analyze them with AI, and visualize the results.
+Интерактивен модул за анализ и интерпретация на логове. Обучаемите качват логове, анализират ги с AI и визуализират резултатите.
 
 ---
 
-## 🎯 Key SIEM Features
+## 🎯 SIEM възможности
 
-- 📁 Upload `.json` log files from the browser  
-- 🤖 Analyze logs with **GPT-4**: detect incident type, assess risk, generate summaries and recommendations  
-- 📊 Generate visual charts with Chart.js  
-- 🧠 Display key summary data (timestamp, event type, user, action, location)  
-- 🧾 Export analysis reports as **PDFs**  
-- 🧼 One-click log deletion  
-- 🔐 Authenticated access required  
+- 📁 Качване на `.json` логове през браузъра  
+- 🤖 AI анализ с GPT-4: инцидент, риск, препоръка  
+- 📊 Диаграми с Chart.js  
+- 🔍 Данни по събитие: timestamp, потребител, действие, локация  
+- 🧠 Обяснение на инцидента в учебен стил  
+- 📄 Експорт на анализа като PDF  
+- 🧼 Изчистване на логовете  
 
 ---
 
-## 🧪 Sample Log File
+## 🧠 Walkthrough модул
+
+- 📌 Задава въпроси стъпка по стъпка  
+- 📝 Събира отговори и ги изпраща към AI  
+- 🧠 Връща кратка обратна връзка и оценка  
+- 📄 Генерира персонален walkthrough PDF отчет  
+- 🏠 Възможност за връщане към главното меню  
+
+---
+
+## 🧪 Примерен лог файл
 
 ```json
 [
@@ -56,24 +71,60 @@ An interactive visual module designed to help learners analyze and interpret sec
 ```
 
 ---
+## 📊 Диаграми и AI анализ
 
-## 📊 Chart & AI Analysis
+SIEM Dashboard-ът комбинира визуална интерпретация и AI интелигентност, за да подпомогне обучаемите в анализа на инциденти.
 
-The SIEM Dashboard helps learners interpret cybersecurity logs using AI and data visualizations.
-
-- **Event Distribution Chart**: Interactive bar chart showing the frequency of each `event_type`.  
-- **AI-Powered Recommendations**: Tooltips provide plain-language explanations and advice for each event (powered by GPT-4).  
-- **Log Summary Block**: Displays key info from each log entry:
-  - Timestamp  
-  - Event Type  
-  - User  
-  - Action Taken  
-  - Location (system or server)  
-- **AI Analysis Panel**: Educational explanations of security incidents to support learning.  
-- **📄 Export to PDF**: Download the AI analysis as a PDF.  
-- **Log Cleanup**: Easily delete uploaded logs with a button.  
+- **📈 Разпределение на събитията** – интерактивна лента диаграма (`event_type` честота)
+- **🧠 Препоръки с AI Tooltip** – към всяко събитие се показва съвет от GPT-4 (на български)
+- **📋 Обобщение на лога** – показва:
+  - `timestamp`  
+  - `event_type`  
+  - `user`  
+  - `action`  
+  - `location`
+- **📄 PDF отчет** – целият анализ може да се експортира
+- **🗑 Изчистване на логовете** – с един клик
 
 ---
+
+## 🧾 CTF и Leaderboard модул
+
+Симулации на реални инциденти с въпроси, логове и точки за решаване.
+
+- 🎯 Интерактивни мисии в 3 нива (Tier 1–3)
+- 💬 Въпроси и логове в реален контекст
+- 🧠 GPT-4 проверява и оценява отговорите
+- 📄 Автоматично генериран PDF с резултатите
+- 🏆 Натрупване на точки и класиране в Leaderboard
+
+---
+
+## 🧠 Walkthrough модул
+
+Насочено, стъпково упражнение за разследване на инцидент.
+
+- ✅ Стъпка по стъпка въпроси (какво, кой, как)
+- ✍️ Полета за свободен отговор
+- 🤖 AI анализира отговорите и дава съвети
+- 📈 Финална оценка и препоръки
+- 📄 PDF отчет на цялата мисия
+- 🔁 Бутон за повторение или връщане към меню
+
+---
+
+## 🏅 Профил и Сертификат
+
+Потребителите имат достъп до табло с техните постижения.
+
+- 👤 „Моят профил“ показва:
+  - История на CTF и walkthrough-и
+  - AI оценки и препоръки
+  - Натрупани точки по мисии
+- 📜 Сертификат за завършено ниво:
+  - Издава се при събрани 100+ точки или завършени определени мисии
+  - Изтегля се като **PDF със знак и дата**
+
 
 ## ⚙️ Tech Stack
 
@@ -93,23 +144,51 @@ The SIEM Dashboard helps learners interpret cybersecurity logs using AI and data
 ## 📁 Project Structure
 
 ```text
+## 📁 Project Structure
+
+```text
 cyberedu-ai-lab-by-helly-academy/
-├── app.py                  # Main Flask app
-├── .env                    # API keys and secrets
-├── utils/
-│   └── pdf_export.py       # PDF generation logic
+├── app.py                        # Основно Flask приложение
+├── .env                          # API ключове и тайни
+├── requirements.txt              # Python зависимости
+├── README.md                     # Документация
+│
+├── utils/                        # Помощни модули
+│   ├── pdf_export.py             # Генериране на PDF с кирилица
+│   ├── ai_feedback.py            # AI логика за обратна връзка
+│   ├── save_ctf_response.py      # Съхранение на отговори от CTF
+│   └── certificates.py           # (по избор) Генериране на сертификати
+│
 ├── instance/
-│   └── logs/               # Uploaded .json log files
-├── results/                # Generated reports
+│   └── logs/                     # Качени .json логове от потребители
+│
+├── results/                      # PDF репорти от анализи, walkthrough-и, CTF
+│
 ├── static/
-│   ├── assets/
-│   │   └── chart.js        # Chart configuration
-│   └── style.css           # CSS styles
-├── templates/
-│   ├── siem.html           # SIEM dashboard page
-│   └── *.html              # Other pages (login, register, etc.)
-├── requirements.txt
-└── README.md
+│   ├── style.css                 # Общи стилове
+│   ├── login.css                 # Стил за формата за вход
+│   ├── auth.js                   # JS логика за автентикация
+│   ├── chart.js                  # Конфигурация за диаграми
+│   └── fonts/
+│       └── DejaVuSans.ttf        # Шрифт с поддръжка на кирилица
+│
+├── templates/                    # HTML шаблони
+│   ├── base.html                 # Общ базов шаблон
+│   ├── login.html               # Форма за вход
+│   ├── register.html            # Регистрация
+│   ├── dashboard.html           # Основно табло
+│   ├── siem.html                # SIEM Dashboard
+│   ├── reports.html             # Списък с анализи
+│   ├── ctf.html                 # CTF интерфейс
+│   ├── ctf_overview.html        # Всички CTF мисии
+│   ├── ctf_result.html          # Резултат след мисия
+│   ├── walkthrough_list.html    # Списък с walkthrough-и
+│   ├── walkthrough.html         # Интерактивен walkthrough
+│   ├── profile.html             # „Моят профил“ страница
+│   ├── leaderboard.html         # Класация
+│   ├── user_management.html     # (по избор) Админ панел
+│   └── forgot_password.html     # Забравена парола
+
 ```
 
 ---
