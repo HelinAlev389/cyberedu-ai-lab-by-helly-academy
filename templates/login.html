@@ -1,49 +1,128 @@
-{% extends "base.html" %}
-{% block title %}Вход{% endblock %}
-{% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 
-<div class="auth-layout">
-  <div class="auth-visual">
-    <img src="{{ url_for('static', filename='assets/cyber-visual.png') }}" alt="Cyber Visual" class="img-fluid">
+<div class="login-wrapper">
+  <div class="login-left">
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="particle" style="top: 70%; left: 80%;"></div>
+    <div class="particle" style="top: 30%; left: 60%;"></div>
+    <div class="particle" style="top: 85%; left: 15%;"></div>
+
+    <img src="{{ url_for('static', filename='assets/logo-wide.png') }}" class="logo" alt="Helly Academy Logo">
+
+    <div class="tagline">
+      <h2>AI-POWERED.<br>HACKER-PROOF.<br>ALWAYS ON.</h2>
+<a href="{{ url_for('register') }}" class="btn btn-link signup-link">SIGN UP</a>
+
+
+    </div>
   </div>
 
-  <div class="auth-card">
-    <h2>Добре дошъл обратно!</h2>
-    <form method="POST">
-      {{ form.hidden_tag() }}
-      <div class="mb-3">
-        {{ form.username(class="form-control", placeholder="Потребителско име") }}
-      </div>
-      <div class="mb-3 position-relative">
-        {{ form.password(class="form-control", id="password", placeholder="Парола") }}
-        <span class="toggle-eye" onclick="togglePassword('password')"><i class="far fa-eye"></i></span>
-        <div id="strength-meter" class="mt-2"></div>
-      </div>
+  <div class="login-right">
+    <canvas id="particles-canvas-right"></canvas>
 
-      <div class="form-check mb-3">
-        {{ form.remember_me(class="form-check-input") }}
-        <label class="form-check-label">Запомни ме</label>
-      </div>
+    <div class="login-form-box">
+      <h3>LOG IN TO SECURE NODE</h3>
+      <form method="POST" action="{{ url_for('login') }}">
+        {{ form.hidden_tag() }}
 
-      <div class="d-grid">
-        <button type="submit" class="btn primary-btn w-100">Вход</button>
-      </div>
+        <div class="input-group">
+          <i class="fas fa-envelope"></i>
+          {{ form.username(class="form-control", placeholder="Email or User ID") }}
+        </div>
 
-      <p class="text-center mt-3">
-        <a href="{{ url_for('forgot_password') }}" class="accent-link">Забравена парола?</a>
-      </p>
-    </form>
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          {{ form.password(class="form-control", placeholder="Password") }}
+        </div>
 
-    <div class="divider mt-4 mb-3">или</div>
+        <div class="input-group">
+          <i class="fas fa-key"></i>
+          {{ form.otp(class="form-control", placeholder="2FA Code (if required)") }}
+        </div>
 
-    <p class="text-center">
-      Нямаш акаунт?
-      <a href="{{ url_for('register') }}" class="btn secondary-btn mt-2">Регистрирай се</a>
-    </p>
+        <div class="form-footer">
+          <label class="remember">
+            {{ form.remember_me }} Remember me
+          </label>
+          <a href="{{ url_for('forgot_password') }}" class="forgot">
+            <i class="fas fa-key"></i> Forgot password?
+          </a>
+        </div>
+
+        {{ form.submit(class="login-btn") }}
+      </form>
+    </div>
   </div>
 </div>
 
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-<script src="{{ url_for('static', filename='auth.js') }}"></script>
-{% endblock %}
+<!-- Make sure this CSS exists in your login.css -->
+<style>
+  .signup-link {
+    color: #f5c054;
+    font-weight: bold;
+    text-decoration: none;
+    margin-left: 4px;
+    transition: 0.2s ease-in-out;
+  }
+
+  .signup-link:hover {
+    color: #FFD700;
+    text-decoration: none;
+  }
+</style>
+
+<script>
+function initParticles(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const isLeft = canvasId.includes("left");
+  canvas.width = window.innerWidth / 2;
+  canvas.height = window.innerHeight;
+
+  let particles = Array.from({ length: 100 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    radius: Math.random() * 1.5,
+    alpha: Math.random(),
+    dx: (Math.random() - 0.5) * 0.1,
+    dy: (Math.random() - 0.5) * 0.1,
+  }));
+
+  function draw() {
+    if (isLeft) {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    for (let p of particles) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(245, 192, 84, ${p.alpha})`;
+      ctx.fill();
+
+      p.x += p.dx;
+      p.y += p.dy;
+
+      if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+    }
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+
+  window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth / 2;
+    canvas.height = window.innerHeight;
+  });
+}
+
+initParticles("particles-canvas");
+initParticles("particles-canvas-right");
+</script>

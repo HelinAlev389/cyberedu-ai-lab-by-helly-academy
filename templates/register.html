@@ -2,42 +2,67 @@
 {% block title %}Регистрация{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 
-<div class="auth-layout">
-  <div class="auth-visual">
-    <img src="{{ url_for('static', filename='assets/cyber-visual.png') }}" alt="Cyber Visual" class="img-fluid">
+<div class="login-wrapper">
+  <div class="login-left">
+    <canvas id="particles-canvas"></canvas>
+    <img src="{{ url_for('static', filename='assets/logo-wide.png') }}" class="logo" alt="Helly Academy Logo">
+
+    <div class="tagline">
+      <h2>AI-POWERED.<br>HACKER-PROOF.<br>ALWAYS ON.</h2>
+      <p>Вече имаш акаунт? <a href="{{ url_for('login') }}" class="login-link">Влез тук</a>
+</p>
+    </div>
   </div>
 
-  <div class="auth-card">
-    <h2 class="text-center mb-4">Създай акаунт</h2>
-    <form method="POST">
-      {{ form.hidden_tag() }}
-      <div class="mb-3">{{ form.first_name(class="form-control", placeholder="Име") }}</div>
-      <div class="mb-3">{{ form.last_name(class="form-control", placeholder="Фамилия") }}</div>
-      <div class="mb-3">{{ form.username(class="form-control", placeholder="Потребителско име") }}</div>
-      <div class="mb-3 position-relative">
-        {{ form.password(class="form-control", id="signup-password", placeholder="Парола") }}
-        <span class="toggle-eye" onclick="togglePassword('signup-password')"><i class="far fa-eye"></i></span>
-        <div id="strength-meter" class="mt-2"></div>
-      </div>
-      <div class="mb-3">
-        {{ form.confirm_password(class="form-control", placeholder="Потвърди парола") }}
-      </div>
-      <div class="mb-3">{{ form.role(class="form-select") }}</div>
-      <div class="d-grid mb-3">
-        <button type="submit" class="btn primary-btn w-100">Регистрация</button>
-      </div>
-    </form>
+  <div class="login-right">
+    <canvas id="particles-canvas-right"></canvas>
 
-    <div class="divider my-4">или</div>
+    <div class="login-form-box">
+      <h3>Създай акаунт</h3>
 
-    <p class="text-center">
-      Вече имаш акаунт?
-      <a href="{{ url_for('login') }}" class="btn secondary-btn ms-2">Влез тук</a>
-    </p>
+      <!-- ✅ Ensure form has POST method and action -->
+      <form method="POST" action="{{ url_for('register') }}">
+        {{ form.hidden_tag() }}
+
+        <div class="input-group">
+          <i class="fas fa-user"></i>
+          {{ form.first_name(class="form-control", placeholder="Име") }}
+        </div>
+
+        <div class="input-group">
+          <i class="fas fa-user"></i>
+          {{ form.last_name(class="form-control", placeholder="Фамилия") }}
+        </div>
+
+        <div class="input-group">
+          <i class="fas fa-user-circle"></i>
+          {{ form.username(class="form-control", placeholder="Потребителско име") }}
+        </div>
+
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          {{ form.password(class="form-control", id="signup-password", placeholder="Парола") }}
+        </div>
+
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          {{ form.confirm_password(class="form-control", placeholder="Потвърди парола") }}
+        </div>
+
+        <div class="input-group">
+          <i class="fas fa-user-shield"></i>
+          {{ form.role(class="form-select") }}
+        </div>
+
+        <!-- ✅ Use Flask-WTF submit button for compatibility -->
+        {{ form.submit(class="login-btn") }}
+      </form>
+    </div>
   </div>
 </div>
 
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-<script src="{{ url_for('static', filename='auth.js') }}"></script>
+<script src="{{ url_for('static', filename='particles.js') }}"></script>
 {% endblock %}

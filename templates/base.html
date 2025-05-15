@@ -9,91 +9,22 @@
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body class="d-flex">
+
+{% set layout_visible = current_user.is_authenticated and request.endpoint not in ['login', 'register', 'forgot_password'] %}
+{% if layout_visible %}
+  <!-- sidebar, topbar, etc. -->
+{% endif %}
+
+
+{% if current_user.is_authenticated and request.endpoint not in ['login', 'register', 'forgot_password'] %}
   <!-- ✅ Sidebar -->
   <aside class="sidebar bg-primary">
     <h4 class="text-center text-light py-3">CyberEdu</h4>
-   <ul class="nav flex-column text-light px-3">
-  <li class="nav-item mb-2">
-    <a class="nav-link text-light {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
-      <i class="fas fa-home me-2"></i> Начало
-    </a>
-  </li>
-
-  <li class="nav-item mb-2">
-    <a class="nav-link text-light {% if request.endpoint == 'siem_dashboard' %}active{% endif %}" href="{{ url_for('siem_dashboard') }}">
-      <i class="fas fa-chart-bar me-2"></i> SIEM Анализатор
-    </a>
-  </li>
-
-  <li class="nav-item mb-2">
-    <a class="nav-link text-light {% if request.endpoint == 'ctf_overview' %}active{% endif %}" href="{{ url_for('ctf_overview') }}">
-      <i class="fas fa-flag me-2"></i> CTF Мисии
-    </a>
-  </li>
-
-  <li class="nav-item mb-2">
-    <a class="nav-link text-light {% if request.endpoint == 'leaderboard' %}active{% endif %}" href="{{ url_for('leaderboard') }}">
-      🏆 Leaderboard
-    </a>
-  </li>
-
-  <li class="nav-item mb-2">
-    <a class="nav-link text-light {% if request.endpoint == 'reports' %}active{% endif %}" href="{{ url_for('reports') }}">
-      <i class="fas fa-file-alt me-2"></i> Отчети
-    </a>
-  </li>
-
-  <li class="nav-item mb-2">
-    <a class="nav-link text-light {% if request.endpoint == 'walkthrough_list' %}active{% endif %}" href="{{ url_for('walkthrough_list') }}">
-      <i class="fas fa-route me-2"></i> Walkthrough Анализи
-    </a>
-  </li>
-
-  {% if current_user.is_authenticated %}
-    <li class="nav-item mb-2">
-      <a class="nav-link text-light" href="#" onclick="toggleChat()">
-        <i class="fas fa-robot me-2"></i> AI Асистент
-      </a>
-    </li>
-
-    {% if current_user.role == 'admin' %}
-      <li class="nav-item text-uppercase small mt-3">Администриране</li>
-      <li class="nav-item">
-        <a class="nav-link text-light" href="{{ url_for('user_management') }}">
-          <i class="fas fa-users-cog me-2"></i> Управление на потребители
-        </a>
-      </li>
-    {% endif %}
-
-    <li class="nav-item mt-3">
-      <a class="nav-link text-light" href="{{ url_for('logout') }}">
-        <i class="fas fa-sign-out-alt me-2"></i> Изход
-      </a>
-    </li>
-  {% else %}
-    <li class="nav-item">
-      <a class="nav-link text-light {% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">
-        <i class="fas fa-sign-in-alt me-2"></i> Вход
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link text-light {% if request.endpoint == 'register' %}active{% endif %}" href="{{ url_for('register') }}">
-        <i class="fas fa-user-plus me-2"></i> Регистрация
-      </a>
-    </li>
-  {% endif %}
-</ul>
-
+    <ul class="nav flex-column text-light px-3">
       <li class="nav-item mb-2">
         <a class="nav-link text-light {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
           <i class="fas fa-home me-2"></i> Начало
-        </a>
-      </li>
-      <li class="nav-item mb-2">
-        <a class="nav-link text-light {% if request.endpoint == 'analyze_log' %}active{% endif %}" href="{{ url_for('analyze_log') }}">
-          <i class="fas fa-search me-2"></i> Анализ
         </a>
       </li>
       <li class="nav-item mb-2">
@@ -116,61 +47,43 @@
           <i class="fas fa-file-alt me-2"></i> Отчети
         </a>
       </li>
-
+      <li class="nav-item mb-2">
+        <a class="nav-link text-light {% if request.endpoint == 'walkthrough_list' %}active{% endif %}" href="{{ url_for('walkthrough_list') }}">
+          <i class="fas fa-route me-2"></i> Walkthrough Анализи
+        </a>
+      </li>
       <li class="nav-item mb-2">
         <a class="nav-link text-light {% if request.endpoint == 'profile' %}active{% endif %}" href="{{ url_for('profile') }}">
           <i class="fas fa-user me-2"></i> Моят профил
         </a>
       </li>
 
+      {% if current_user.role == 'admin' %}
+      <li class="nav-item text-uppercase small mt-3">Администриране</li>
+      <li class="nav-item">
+        <a class="nav-link text-light" href="{{ url_for('user_management') }}">
+          <i class="fas fa-users-cog me-2"></i> Управление на потребители
+        </a>
+      </li>
+      {% endif %}
 
-{% if current_user.is_authenticated %}
-  {% if current_user.role == 'admin' %}
-    <li class="nav-item text-uppercase small mt-3">Администриране</li>
-    <li class="nav-item">
-      <a class="nav-link text-light" href="{{ url_for('user_management') }}">
-        <i class="fas fa-users-cog me-2"></i> Управление на потребители
-      </a>
-    </li>
-  {% endif %}
+      <li class="nav-item mb-2">
+        <a class="nav-link text-light" href="#" onclick="toggleChat()">
+          <i class="fas fa-robot me-2"></i> AI Асистент
+        </a>
+      </li>
 
-  <!-- ✅ AI Tools Section -->
-<li class="nav-item text-uppercase small mt-3">AI Инструменти</li>
-<li class="nav-item mb-2">
-  <a class="nav-link text-light {% if request.endpoint == 'walkthrough_list' %}active{% endif %}" href="{{ url_for('walkthrough_list') }}">
-  <i class="fas fa-route me-2"></i> Walkthrough Анализи
-</a>
-
-  </li>
-
-  <li class="nav-item mb-2">
-    <a class="nav-link text-light" href="#" onclick="toggleChat()">
-      <i class="fas fa-robot me-2"></i> AI Асистент
-    </a>
-  </li>
-
-  <li class="nav-item mt-3">
-    <a class="nav-link text-light" href="{{ url_for('logout') }}">
-      <i class="fas fa-sign-out-alt me-2"></i> Изход
-    </a>
-  </li>
-{% else %}
-  <li class="nav-item">
-    <a class="nav-link text-light {% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">
-      <i class="fas fa-sign-in-alt me-2"></i> Вход
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link text-light {% if request.endpoint == 'register' %}active{% endif %}" href="{{ url_for('register') }}">
-      <i class="fas fa-user-plus me-2"></i> Регистрация
-    </a>
-  </li>
-{% endif %}
-
+      <li class="nav-item mt-3">
+        <a class="nav-link text-light" href="{{ url_for('logout') }}">
+          <i class="fas fa-sign-out-alt me-2"></i> Изход
+        </a>
+      </li>
+    </ul>
   </aside>
 
-  <!-- ✅ Main Content Area -->
+  <!-- ✅ Main wrapper -->
   <div class="main-wrapper flex-grow-1 d-flex flex-column">
+
     <!-- ✅ Topbar -->
     <nav class="topbar d-flex justify-content-between align-items-center px-4 py-2 shadow-sm">
       <div class="d-flex align-items-center gap-2">
@@ -184,7 +97,6 @@
           <i class="fas fa-adjust"></i>
         </button>
         <i class="fas fa-bell text-light"></i>
-        {% if current_user.is_authenticated %}
         <div class="dropdown">
           <a href="#" class="dropdown-toggle text-light" data-bs-toggle="dropdown">
             <i class="fas fa-user-circle me-1"></i> {{ current_user.first_name }}
@@ -194,11 +106,11 @@
             <li><a class="dropdown-item" href="{{ url_for('logout') }}">Изход</a></li>
           </ul>
         </div>
-        {% endif %}
       </div>
     </nav>
+{% endif %}
 
-    <!-- ✅ Flash + Page Content -->
+    <!-- ✅ Main content (always visible) -->
     <main class="p-4 flex-grow-1">
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -213,26 +125,27 @@
       {% block content %}{% endblock %}
     </main>
 
-    <!-- ✅ Footer -->
-    <!-- ✅ Chat Widget -->
+{% if current_user.is_authenticated %}
+    <!-- ✅ Chat widget -->
     <div id="chat-widget" style="position:fixed; bottom:20px; right:20px; z-index:1000;">
-      <button class="btn btn-primary" onclick="toggleChat()" aria-label="Чат с AI">💬 AI Асистент</button>
+      <button class="btn btn-primary" onclick="toggleChat()">💬 AI Асистент</button>
       <div id="chat-box" style="display:none; width:300px; background:white; padding:10px; border:1px solid #ccc; border-radius:10px; margin-top:10px;">
         <div id="chat-messages" style="max-height:200px; overflow-y:auto; color: black;"></div>
         <input type="text" id="chat-input" class="form-control mt-2" placeholder="Попитай нещо..." onkeypress="if(event.key==='Enter') sendMessage()" />
       </div>
     </div>
 
+    <!-- ✅ Footer -->
     <footer class="text-center p-3 bg-dark text-light">
       Helly Academy © 2025 | Cyber Security AI Training Lab
     </footer>
   </div>
+{% endif %}
 
-<!-- ✅ JS for sidebar + theme -->
+<!-- ✅ Scripts -->
 <script>
   function toggleSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    sidebar.classList.toggle('collapsed');
+    document.querySelector('.sidebar').classList.toggle('collapsed');
   }
 
   function toggleTheme() {

@@ -89,7 +89,8 @@ class RegistrationForm(FlaskForm):
 class LoginForm(FlaskForm):
     username = StringField('Потребителско име', validators=[DataRequired()])
     password = PasswordField('Парола', validators=[DataRequired()])
-    remember_me = BooleanField('Запомни ме')  # ⬅️ Добави това
+    otp = StringField('Код за 2FA')  # ➕ Добавено това
+    remember_me = BooleanField('Запомни ме')
     submit = SubmitField('Вход')
 
 
@@ -108,6 +109,7 @@ Task:
 Here is the log to analyze:
 {log}
 """
+
 
 # --- Routes ---
 
