@@ -16,6 +16,8 @@ from flask_login import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
+from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Mail, Message
 from openai import OpenAI
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SelectField, SubmitField, BooleanField
@@ -27,6 +29,9 @@ from utils.pdf_export import export_to_pdf, sanitize_filename
 from utils.save_ctf_response import save_ctf_report
 from utils.ai_feedback import get_ctf_feedback
 from utils.walkthroughs import WALKTHROUGHS
+
+from itsdangerous import URLSafeTimedSerializer
+
 import datetime
 
 load_dotenv()
@@ -36,6 +41,28 @@ app.secret_key = os.getenv("SECRET_KEY", "supersecret123")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 client = OpenAI()
+
+
+def generate_reset_token(username):
+    serializer = URLSafeTimedSerializer(app.secret_key)
+    return serializer.dumps(username, salt="reset-password")
+
+
+def confirm_reset_token(token, expiration=3600):
+    serializer = URLSafeTimedSerializer(app.secret_key)
+    return serializer.loads(token, salt="reset-password", max_age=expiration)
+
+
+app.config.update(
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=587,
+    MAIL_USE_TLS=True,
+    MAIL_USERNAME=os.getenv("MAIL_USER"),
+    MAIL_PASSWORD=os.getenv("MAIL_PASS"),
+    MAIL_DEFAULT_SENDER=os.getenv("MAIL_USER")
+)
+
+mail = Mail(app)
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -50,6 +77,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(200), nullable=False)
     first_name = db.Column(db.String(80), nullable=False)
     last_name = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
     role = db.Column(db.String(20), nullable=False)
 
     def set_password(self, raw):
@@ -71,6 +99,7 @@ class RegistrationForm(FlaskForm):
     last_name = StringField('Фамилия', validators=[DataRequired(), Length(1, 80)])
     username = StringField('Потребителско име', validators=[DataRequired(), Length(4, 80)])
     password = PasswordField('Парола', validators=[DataRequired(), Length(6, 200)])
+    email = StringField('Имейл', validators=[DataRequired(), Length(5, 120)])
 
     confirm_password = PasswordField(
         'Потвърди парола',
@@ -127,10 +156,12 @@ def register():
         else:
             u = User(
                 username=form.username.data,
+                email=form.email.data,
                 first_name=form.first_name.data,
                 last_name=form.last_name.data,
                 role=form.role.data
             )
+
             u.set_password(form.password.data)
             db.session.add(u)
             db.session.commit()
@@ -289,6 +320,11 @@ def clear_results():
     return jsonify({"deleted": deleted})
 
 
+# Конфигурация на Flask-Mail (примерно)
+
+mail = Mail(app)
+
+
 class ForgotPasswordForm(FlaskForm):
     username = StringField('Имейл или потребителско име', validators=[DataRequired()])
     submit = SubmitField('Изпрати линк')
@@ -298,9 +334,44 @@ class ForgotPasswordForm(FlaskForm):
 def forgot_password():
     form = ForgotPasswordForm()
     if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user:
+            token = generate_reset_token(user.username)
+            reset_link = url_for('reset_password', token=token, _external=True)
+
+            msg = Message("Нулиране на парола", recipients=[user.username])
+            msg.body = f"Здравей,\n\nКликни тук за да нулираш паролата си:\n{reset_link}\n\nПоздрави, Helly Academy"
+            mail.send(msg)
+
         flash("Ако съществува акаунт с този имейл/потребителско име, ще получиш линк за нулиране на паролата.", "info")
         return redirect(url_for('login'))
     return render_template('forgot_password.html', form=form)
+
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('Нова парола', validators=[DataRequired(), Length(6)])
+    confirm = PasswordField('Потвърди паролата', validators=[EqualTo('password')])
+    submit = SubmitField('Запази')
+
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        username = confirm_reset_token(token)
+    except:
+        flash("Невалиден или изтекъл линк.", "danger")
+        return redirect(url_for('login'))
+
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=username).first()
+        if user:
+            user.set_password(form.password.data)
+            db.session.commit()
+            flash("Паролата е обновена успешно. Влез с новата си парола.", "success")
+            return redirect(url_for('login'))
+
+    return render_template('reset_password.html', form=form)
 
 
 @app.route("/siem")
