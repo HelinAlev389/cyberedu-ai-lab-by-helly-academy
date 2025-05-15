@@ -1,11 +1,47 @@
 {% extends "base.html" %}
+
 {% block content %}
   <h2>{{ scenario.title }}</h2>
   <p>{{ scenario.description }}</p>
 
   {% if log_data %}
+    <h4>📄 Log файл:</h4>
     <pre><code>{{ log_data | tojson(indent=2) }}</code></pre>
   {% endif %}
 
-  <!-- Може да добавиш секция за въпроси/отговори тук -->
+  {% if scenario.steps %}
+  <form id="walkthrough-form">
+    <h4>🔍 Стъпки за анализ:</h4>
+    {% for step in scenario.steps %}
+      <div class="mb-3">
+        <label><strong>{{ loop.index }}. {{ step }}</strong></label>
+        <textarea name="answer{{ loop.index }}" class="form-control" rows="3" required></textarea>
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-success">Изпрати за AI оценка</button>
+  </form>
+  {% endif %}
+
+  <div id="ai-feedback" class="mt-4"></div>
+
+  <script>
+    document.getElementById("walkthrough-form")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const form = e.target;
+      const answers = Array.from(form.elements)
+        .filter(el => el.name.startsWith("answer"))
+        .map(el => el.value.trim());
+
+      const response = await fetch("/ai-walkthrough-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers })
+      });
+
+      const result = await response.json();
+      document.getElementById("ai-feedback").innerHTML =
+        `<h5>🧠 AI оценка:</h5><div class="alert alert-info">${result.feedback.replaceAll('\n', '<br>')}</div>`;
+    });
+  </script>
 {% endblock %}
