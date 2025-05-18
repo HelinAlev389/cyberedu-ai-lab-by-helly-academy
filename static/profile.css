@@ -23,3 +23,41 @@
 .profile-card .btn-primary:hover {
   background-color: #125f66;
 }
+.profile-card img {
+  border: 3px solid #444;
+  margin-bottom: 1rem;
+}
+
+body {
+  background-color: #1e1f2f;
+  color: #e4e6eb;
+}
+
+h2, h3 {
+  color: #f5c054;
+}
+
+/* Password strength bar container */
+#strength-meter {
+  background-color: #3a3b4f;
+  border-radius: 4px;
+  height: 6px;
+  margin-top: 4px;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Optional tooltip style */
+#strength-meter::after {
+  content: attr(title);
+  position: absolute;
+  top: -24px;
+  right: 0;
+  font-size: 0.8rem;
+  color: #f5c054;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}

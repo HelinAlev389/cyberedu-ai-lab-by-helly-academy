@@ -1,9 +1,9 @@
+import datetime
 import io
 import json
 import os
 import zipfile
 from collections import Counter
-from sqlalchemy import func
 
 from dotenv import load_dotenv
 from flask import (
@@ -11,28 +11,27 @@ from flask import (
     redirect, url_for, send_file, flash, session
 )
 from flask_login import (
-    LoginManager, UserMixin,
-    login_user, logout_user, login_required, current_user
+    LoginManager, login_user, logout_user, login_required, current_user
 )
+from flask_mail import Mail, Message
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
 from itsdangerous import URLSafeTimedSerializer
-from flask_mail import Mail, Message
 from openai import OpenAI
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
-from wtforms import StringField, PasswordField, SelectField, SubmitField, BooleanField
+from werkzeug.utils import secure_filename
+from wtforms import StringField, PasswordField, SelectField, SubmitField, BooleanField, EmailField
 from wtforms.validators import DataRequired, Length, EqualTo
 
+from utils.ai_feedback import get_ctf_feedback
 from utils.ctf_missions import MISSIONS
 from utils.pdf_export import export_to_pdf, sanitize_filename
-
 from utils.save_ctf_response import save_ctf_report
-from utils.ai_feedback import get_ctf_feedback
 from utils.walkthroughs import WALKTHROUGHS
-
-from itsdangerous import URLSafeTimedSerializer
-
-import datetime
 
 load_dotenv()
 
@@ -65,20 +64,24 @@ app.config.update(
 mail = Mail(app)
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+from flask_login import UserMixin
 
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
-    first_name = db.Column(db.String(80), nullable=False)
-    last_name = db.Column(db.String(80), nullable=False)
+    first_name = db.Column(db.String(100))
+    last_name = db.Column(db.String(100))
     email = db.Column(db.String(120), unique=True, nullable=False)
-    role = db.Column(db.String(20), nullable=False)
+    role = db.Column(db.String(50))
+    profile_image = db.Column(db.String(200))  # If not already added
 
     def set_password(self, raw):
         self.password = generate_password_hash(raw)
@@ -149,24 +152,28 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        if User.query.filter_by(username=form.username.data).first():
-            form.username.errors.append('Потребителското име вече съществува.')
-        else:
-            u = User(
-                username=form.username.data,
-                email=form.email.data,
-                first_name=form.first_name.data,
-                last_name=form.last_name.data,
-                role=form.role.data
+    if request.method == 'POST':
+        try:
+            new_user = User(
+                username=request.form['username'],
+                first_name=request.form['first_name'],
+                last_name=request.form['last_name'],
+                email=request.form['email'],
+                role=request.form['role'],
+                profile_image=None
             )
-
-            u.set_password(form.password.data)
-            db.session.add(u)
+            new_user.set_password(request.form['password'])
+            db.session.add(new_user)
             db.session.commit()
+            flash('Регистрацията е успешна! Моля, влез.', 'success')
             return redirect(url_for('login'))
-    return render_template('register.html', form=form)
+
+        except IntegrityError:
+            db.session.rollback()
+            flash('Грешка: Имейл или потребителско име вече съществува.', 'danger')
+            return redirect(url_for('register'))
+
+    return render_template('register.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -524,6 +531,61 @@ def export_siem_pdf():
     except Exception as e:
         flash(f"Грешка при генериране на PDF: {str(e)}", "danger")
         return redirect(url_for("siem_dashboard"))
+
+
+class EditProfileForm(FlaskForm):
+    first_name = StringField('Име', validators=[DataRequired()])
+    last_name = StringField('Фамилия', validators=[DataRequired()])
+    email = EmailField('Имейл', validators=[DataRequired()])
+    profile_image = FileField('Профилна снимка', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Само изображения!')])
+    submit = SubmitField('Запази промените')
+
+
+@app.route('/profile/edit', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    form = EditProfileForm(obj=current_user)
+
+    if form.validate_on_submit():
+        current_user.first_name = form.first_name.data
+        current_user.last_name = form.last_name.data
+        current_user.email = form.email.data
+
+        if form.profile_image.data:
+            image = form.profile_image.data
+            filename = secure_filename(image.filename)
+            path = os.path.join('static/profile_pics', filename)
+            image.save(path)
+            current_user.profile_image = filename
+
+        db.session.commit()
+        flash('Профилът е обновен успешно.', 'success')
+        return redirect(url_for('profile'))
+
+    return render_template('edit_profile.html', form=form)
+
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Сегашна парола', validators=[DataRequired()])
+    new_password = PasswordField('Нова парола', validators=[DataRequired(), Length(min=6)])
+    confirm_new_password = PasswordField('Потвърди новата парола', validators=[
+        DataRequired(), EqualTo('new_password', message='Паролите не съвпадат.')])
+    submit = SubmitField('Смени паролата')
+
+
+@app.route('/profile/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if not current_user.check_password(form.current_password.data):
+            flash('Невалидна сегашна парола.', 'danger')
+        else:
+            current_user.set_password(form.new_password.data)
+            db.session.commit()
+            flash('Паролата е успешно променена.', 'success')
+            return redirect(url_for('profile'))
+    return render_template('change_password.html', form=form)
 
 
 @app.route('/profile')

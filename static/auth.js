@@ -11,37 +11,31 @@ function togglePassword(id) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("password");
   const strengthMeter = document.getElementById("strength-meter");
-  const passwordInputs = [
-    document.getElementById("password"),
-    document.getElementById("signup-password")
-  ].filter(Boolean);
 
-  passwordInputs.forEach(input => {
-    input.addEventListener("input", () => {
-      const val = input.value.trim();
-      let strength = 0;
-      let label = "Слаба";
-      let color = "#D74042";
+  if (!input || !strengthMeter) return;
 
-      if (val.length >= 8 && /[A-Z]/.test(val) && /\d/.test(val)) {
-        strength = 100;
-        label = "Силна";
-        color = "#197C85";
-      } else if (val.length >= 6) {
-        strength = 60;
-        label = "Средна";
-        color = "#F57426";
-      } else {
-        strength = 20;
-      }
+  input.addEventListener("input", () => {
+    const val = input.value.trim();
+    let strength = 0;
+    let label = "Слаба";
+    let color = "#D74042";
 
-      if (strengthMeter) {
-        strengthMeter.style.background = `linear-gradient(to right, #f5c054 ${strength}%, #333 ${strength}%)`;
-        strengthMeter.setAttribute("aria-label", `Сигурност: ${label}`);
-        strengthMeter.style.height = "6px"; // optional visual cue
-        strengthMeter.title = `Сигурност: ${label}`;
-      }
-    });
+    if (val.length >= 8 && /[A-Z]/.test(val) && /\d/.test(val)) {
+      strength = 100;
+      label = "Силна";
+      color = "#197C85";
+    } else if (val.length >= 6) {
+      strength = 60;
+      label = "Средна";
+      color = "#F57426";
+    } else {
+      strength = 20;
+    }
+
+    strengthMeter.style.background = `linear-gradient(to right, ${color} ${strength}%, #333 ${strength}%)`;
+    strengthMeter.setAttribute("aria-label", `Сигурност: ${label}`);
+    strengthMeter.title = `Сигурност: ${label}`;
   });
 });

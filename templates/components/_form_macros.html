@@ -1,0 +1,14 @@
+{% macro password_field(field, label=None, id=None, show_meter=False) %}
+<div class="mb-3">
+    {{ (label or field.label.text)|safe }}
+    <div class="input-group">
+        {{ field(class="form-control", id=id) }}
+        <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('{{ id }}')">
+            <i class="fas fa-eye"></i>
+        </button>
+    </div>
+    {% if show_meter %}
+        <div id="strength-meter" class="mt-2" style="width: 100%; border-radius: 4px;"></div>
+    {% endif %}
+</div>
+{% endmacro %}

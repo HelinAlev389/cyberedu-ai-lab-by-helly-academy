@@ -12,3 +12,4 @@ wtforms~=3.2.1
 sqlalchemy~=2.0.40
 fpdf~=1.7.2
 itsdangerous~=2.2.0
+alembic~=1.15.2
