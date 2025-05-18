@@ -32,6 +32,10 @@ from utils.ctf_missions import MISSIONS
 from utils.pdf_export import export_to_pdf, sanitize_filename
 from utils.save_ctf_response import save_ctf_report
 from utils.walkthroughs import WALKTHROUGHS
+from utils.ctf_missions import MISSIONS
+from utils.pdf_export import export_to_pdf, sanitize_filename
+from utils.save_ctf_response import save_ctf_report
+from utils.ai_feedback import get_ctf_feedback
 
 load_dotenv()
 
@@ -399,7 +403,7 @@ def siem_analyze():
     filepath = os.path.join(logs_path, logfile)
 
     try:
-        with open(filepath) as f:
+        with open(filepath, encoding="utf-8") as f:
             data = json.load(f)
 
         if isinstance(data, dict):
@@ -588,6 +592,7 @@ def change_password():
     return render_template('change_password.html', form=form)
 
 
+
 @app.route('/profile')
 @login_required
 def profile():
@@ -702,6 +707,9 @@ class CTFResult(db.Model):
 @app.route("/leaderboard")
 @login_required
 def leaderboard():
+
+    from sqlalchemy import func
+
     scores = (
         db.session.query(CTFResult.username, func.sum(CTFResult.points).label("total_points"))
         .group_by(CTFResult.username)
@@ -717,6 +725,7 @@ def leaderboard():
 
     with open(filename, "w", encoding="utf-8") as f:
         f.write("Log:\n" + log_raw + "\n\n---\nGPT Response:\n" + gpt_result)
+
 
 
 @app.route("/ai-chat", methods=["POST"])
@@ -739,6 +748,7 @@ def ai_chat():
         return jsonify({"reply": reply})
     except Exception as e:
         return jsonify({"reply": f"⚠️ Грешка: {str(e)}"})
+
 
 
 @app.route("/walkthroughs")
@@ -825,4 +835,5 @@ def walkthrough_pdf():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
+    print("Таблиците са създадени.")
     app.run(debug=True)

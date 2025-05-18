@@ -1,0 +1,9 @@
+[
+  {
+    "timestamp": "2025-05-14T08:55:00Z",
+    "event_type": "phishing_click",
+    "user": "student12",
+    "action": "clicked malicious link",
+    "location": "MailClient-01"
+  }
+]
