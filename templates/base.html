@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="bg">
 <head>
+  {% set layout_visible = current_user.is_authenticated and request.endpoint not in ['login', 'register', 'forgot_password'] %}
   <meta charset="UTF-8">
   <title>{% block title %}CyberEdu AI Lab{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,13 +12,7 @@
 </head>
 <body class="d-flex">
 
-{% set layout_visible = current_user.is_authenticated and request.endpoint not in ['login', 'register', 'forgot_password'] %}
 {% if layout_visible %}
-  <!-- sidebar, topbar, etc. -->
-{% endif %}
-
-
-{% if current_user.is_authenticated and request.endpoint not in ['login', 'register', 'forgot_password'] %}
   <!-- ✅ Sidebar -->
   <aside class="sidebar bg-primary">
     <h4 class="text-center text-light py-3">CyberEdu</h4>
@@ -110,7 +105,7 @@
     </nav>
 {% endif %}
 
-    <!-- ✅ Main content (always visible) -->
+    <!-- ✅ Main content -->
     <main class="p-4 flex-grow-1">
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -125,7 +120,7 @@
       {% block content %}{% endblock %}
     </main>
 
-{% if current_user.is_authenticated %}
+    {% if current_user.is_authenticated %}
     <!-- ✅ Chat widget -->
     <div id="chat-widget" style="position:fixed; bottom:20px; right:20px; z-index:1000;">
       <button class="btn btn-primary" onclick="toggleChat()">💬 AI Асистент</button>
@@ -134,15 +129,16 @@
         <input type="text" id="chat-input" class="form-control mt-2" placeholder="Попитай нещо..." onkeypress="if(event.key==='Enter') sendMessage()" />
       </div>
     </div>
+    {% endif %}
 
     <!-- ✅ Footer -->
-    <footer class="text-center p-3 bg-dark text-light">
+    <footer class="text-center p-3 bg-dark text-light mt-auto">
       Helly Academy © 2025 | Cyber Security AI Training Lab
     </footer>
-  </div>
-{% endif %}
 
-<!-- ✅ Scripts -->
+  </div>
+
+<!-- Scripts -->
 <script>
   function toggleSidebar() {
     document.querySelector('.sidebar').classList.toggle('collapsed');
