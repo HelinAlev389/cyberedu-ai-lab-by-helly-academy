@@ -15,6 +15,7 @@ from flask_login import (
     login_user, logout_user, login_required, current_user
 )
 from flask_mail import Mail, Message
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from itsdangerous import URLSafeTimedSerializer
@@ -29,8 +30,8 @@ from utils.ai_feedback import get_ctf_feedback
 from utils.ctf_missions import MISSIONS
 from utils.pdf_export import export_to_pdf, sanitize_filename
 from utils.save_ctf_response import save_ctf_report
+from utils.tutor import evaluate_answer, load_lesson
 from utils.walkthroughs import WALKTHROUGHS
-from flask_migrate import Migrate
 
 load_dotenv()
 
@@ -341,7 +342,8 @@ def forgot_password():
             token = generate_reset_token(user.username)
             reset_link = url_for('reset_password', token=token, _external=True)
 
-            msg = Message("Нулиране на парола", recipients=[user.username])
+            msg = Message("Нулиране на парола", recipients=[user.email])
+
             msg.body = f"Здравей,\n\nКликни тук за да нулираш паролата си:\n{reset_link}\n\nПоздрави, Helly Academy"
             mail.send(msg)
 
@@ -576,7 +578,7 @@ def ctf_mission(mission_id, tier, answers=None):
             except Exception as e:
                 flash(f"⚠️ Неуспешно зареждане на лог файл: {e}", "danger")
 
-        # 🧠 AI Feedback (с log_data, ако е наличен)
+        #  AI Feedback (с log_data, ако е наличен)
         ai_feedback = get_ctf_feedback(
             current_user.username,
             mission_id,
@@ -628,6 +630,8 @@ def ctf_result():
 @login_required
 def download_ctf_pdf(filename):
     return send_file(os.path.join("results", filename), as_attachment=True)
+    safe = secure_filename(filename)
+    return send_file(os.path.join("results", safe), as_attachment=True)
 
 
 class CTFResult(db.Model):
@@ -841,7 +845,7 @@ def upload_photo():
         flash("Позволени формати: PNG, JPG, JPEG", "danger")
         return redirect(url_for("profile"))
 
-    filename = f"{current_user.username}_{photo.filename}"
+    filename = f"{current_user.username}_{secure_filename(photo.filename)}"
     upload_path = os.path.join("static", "uploads")
     os.makedirs(upload_path, exist_ok=True)
     photo.save(os.path.join(upload_path, filename))
@@ -892,6 +896,64 @@ def update_profile():
     db.session.commit()
     flash("Profile updated successfully!", "success")
     return redirect(url_for('profile'))
+
+
+# helpers
+def lessons_catalog() -> dict:
+    path = os.path.join(os.path.dirname(__file__), "lessons.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+# route
+@app.route("/learn", methods=["GET", "POST"])
+@login_required
+def learn():
+    catalog = lessons_catalog()
+    lesson_id = request.args.get("lesson_id", "network_security_basics")
+    lesson = catalog.get(lesson_id)
+    if not lesson:
+        return "Lesson not found", 404
+
+    step_index = session.get("lesson_step", 0)
+    feedback = prev_answer = None
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        max_idx = len(lesson["steps"]) - 1
+
+        if action in {"next", "back", "restart", "skip"}:
+            if action == "next":
+                step_index = min(step_index + 1, max_idx)
+            elif action == "back":
+                step_index = max(step_index - 1, 0)
+            elif action == "restart":
+                step_index = 0
+            elif action == "skip":
+                step_index = min(step_index + 1, max_idx)
+
+        elif action == "submit_answer":
+            user_answer = request.form.get("user_answer", "")
+            step = lesson["steps"][step_index]
+            rubric = step.get("rubric", "")
+            feedback = evaluate_answer(user_answer, rubric)
+            prev_answer = user_answer
+
+        session["lesson_step"] = step_index
+
+    step = lesson["steps"][step_index]
+    return render_template(
+        "lesson.html",
+        title=lesson["title"],
+        content=step["content"],
+        expect_input=step.get("expect_input", False),
+        feedback=feedback,
+        prev_answer=prev_answer,
+        available_lessons=list(catalog.keys()),
+    )
 
 
 if __name__ == "__main__":

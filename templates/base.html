@@ -13,7 +13,7 @@
 <body class="d-flex">
 
 {% if layout_visible %}
-  <!-- ✅ Sidebar -->
+  <!--  Sidebar -->
   <aside class="sidebar bg-primary">
     <h4 class="text-center text-light py-3">CyberEdu</h4>
     <ul class="nav flex-column text-light px-3">
@@ -68,6 +68,8 @@
         </a>
       </li>
 
+
+
       <li class="nav-item mt-3">
         <a class="nav-link text-light" href="{{ url_for('logout') }}">
           <i class="fas fa-sign-out-alt me-2"></i> Изход
@@ -76,10 +78,10 @@
     </ul>
   </aside>
 
-  <!-- ✅ Main wrapper -->
+  <!-- Main wrapper -->
   <div class="main-wrapper flex-grow-1 d-flex flex-column">
 
-    <!-- ✅ Topbar -->
+    <!--  Topbar -->
     <nav class="topbar d-flex justify-content-between align-items-center px-4 py-2 shadow-sm">
       <div class="d-flex align-items-center gap-2">
         <button class="btn btn-outline-light d-md-none" onclick="toggleSidebar()">
@@ -105,7 +107,7 @@
     </nav>
 {% endif %}
 
-    <!-- ✅ Main content -->
+    <!--  Main content -->
     <main class="p-4 flex-grow-1">
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -121,7 +123,7 @@
     </main>
 
     {% if current_user.is_authenticated %}
-    <!-- ✅ Chat widget -->
+    <!--  Chat widget -->
     <div id="chat-widget" style="position:fixed; bottom:20px; right:20px; z-index:1000;">
       <button class="btn btn-primary" onclick="toggleChat()">💬 AI Асистент</button>
       <div id="chat-box" style="display:none; width:300px; background:white; padding:10px; border:1px solid #ccc; border-radius:10px; margin-top:10px;">
@@ -131,7 +133,7 @@
     </div>
     {% endif %}
 
-    <!-- ✅ Footer -->
+    <!--  Footer -->
     <footer class="text-center p-3 bg-dark text-light mt-auto">
       Helly Academy © 2025 | Cyber Security AI Training Lab
     </footer>
