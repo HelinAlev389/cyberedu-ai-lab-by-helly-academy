@@ -188,10 +188,6 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    return render_template('dashboard.html')
 
 
 @app.route('/analyze-log', methods=['POST'])
@@ -758,6 +754,39 @@ def walkthrough_pdf():
     export_to_pdf(content, "", filename)
 
     return send_file(filename, as_attachment=True)
+
+@app.route("/dashboard")
+@login_required
+def dashboard():
+    return render_template("dashboard.html")
+
+
+@app.route("/api/dashboard-data")
+@login_required
+def dashboard_data():
+    role = current_user.role
+
+    data = {}
+    if role == "student":
+        data = {
+            "missions_completed": 5,
+            "total_points": 120,
+            "rank": "Bronze",
+        }
+    elif role == "teacher":
+        data = {
+            "students": 42,
+            "avg_score": 78.5,
+            "top_mission": "phishing-101",
+        }
+    elif role == "admin":
+        data = {
+            "total_users": User.query.count(),
+            "ctf_submissions": CTFResult.query.count(),
+            "log_files": len(os.listdir("instance/logs")) if os.path.exists("instance/logs") else 0
+        }
+
+    return jsonify(data)
 
 
 if __name__ == "__main__":
