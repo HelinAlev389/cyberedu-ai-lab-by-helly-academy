@@ -9,10 +9,12 @@
   </div>
 
   <canvas id="roleChart" height="100"></canvas>
+  <canvas id="activityChart" height="100" class="mt-5"></canvas>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
+<<script>
   document.addEventListener("DOMContentLoaded", async () => {
     const res = await fetch("/api/dashboard-data");
     const data = await res.json();
@@ -54,6 +56,42 @@
         }
       }
     });
+
+    // ✅ Ново: ако е студент, зарежда графика с активност по дати
+    if ("{{ current_user.role }}" === "student") {
+      fetch("/api/student-activity")
+        .then(res => res.json())
+        .then(activityData => {
+          const dates = Object.keys(activityData);
+          const counts = Object.values(activityData);
+
+          const ctx2 = document.getElementById("activityChart").getContext("2d");
+          new Chart(ctx2, {
+            type: 'line',
+            data: {
+              labels: dates,
+              datasets: [{
+                label: 'CTF активности по дати',
+                data: counts,
+                fill: true,
+                tension: 0.3,
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0,123,255,0.1)'
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: true }
+              },
+              scales: {
+                y: { beginAtZero: true }
+              }
+            }
+          });
+        });
+    }
   });
 </script>
+
 {% endblock %}

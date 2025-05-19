@@ -188,8 +188,6 @@ def logout():
     return redirect(url_for('login'))
 
 
-
-
 @app.route('/analyze-log', methods=['POST'])
 @login_required
 def analyze_log():
@@ -755,6 +753,7 @@ def walkthrough_pdf():
 
     return send_file(filename, as_attachment=True)
 
+
 @app.route("/dashboard")
 @login_required
 def dashboard():
@@ -764,29 +763,62 @@ def dashboard():
 @app.route("/api/dashboard-data")
 @login_required
 def dashboard_data():
-    role = current_user.role
+    if current_user.role == "admin":
+        user_count = User.query.count()
+        ctf_count = CTFResult.query.count()
+        leaderboard = db.session.query(
+            CTFResult.username,
+            func.sum(CTFResult.points).label("points")
+        ).group_by(CTFResult.username).count()
 
-    data = {}
-    if role == "student":
-        data = {
-            "missions_completed": 5,
-            "total_points": 120,
-            "rank": "Bronze",
-        }
-    elif role == "teacher":
-        data = {
-            "students": 42,
-            "avg_score": 78.5,
-            "top_mission": "phishing-101",
-        }
-    elif role == "admin":
-        data = {
-            "total_users": User.query.count(),
-            "ctf_submissions": CTFResult.query.count(),
-            "log_files": len(os.listdir("instance/logs")) if os.path.exists("instance/logs") else 0
-        }
+        return jsonify({
+            "потребители": user_count,
+            "ctf резултати": ctf_count,
+            "класирани участници": leaderboard
+        })
 
-    return jsonify(data)
+    elif current_user.role == "teacher":
+        students = User.query.filter_by(role="student").count()
+        missions = len(MISSIONS)
+        reports = len([f for f in os.listdir("results") if f.endswith(".pdf")])
+
+        return jsonify({
+            "студенти": students,
+            "мисии": missions,
+            "pdf отчети": reports
+        })
+
+    else:  # student
+        results = CTFResult.query.filter_by(username=current_user.username).all()
+        total = sum(r.points for r in results)
+        completed = len(results)
+        last = results[-1].timestamp.strftime("%Y-%m-%d %H:%M") if results else "Няма"
+
+        return jsonify({
+            "общо точки": total,
+            "завършени мисии": completed,
+            "последно участие": last
+        })
+
+@app.route("/api/student-activity")
+@login_required
+def student_activity():
+    if current_user.role != "student":
+        return jsonify({})
+
+    results = (
+        db.session.query(CTFResult.timestamp)
+        .filter_by(username=current_user.username)
+        .all()
+    )
+
+    timeline = {}
+    for r in results:
+        date = r.timestamp.date().isoformat()
+        timeline[date] = timeline.get(date, 0) + 1
+
+    return jsonify(timeline)
+
 
 
 if __name__ == "__main__":
