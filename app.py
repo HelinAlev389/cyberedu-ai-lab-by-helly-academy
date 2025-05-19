@@ -1,9 +1,9 @@
+import datetime
 import io
 import json
 import os
 import zipfile
 from collections import Counter
-from sqlalchemy import func
 
 from dotenv import load_dotenv
 from flask import (
@@ -14,25 +14,23 @@ from flask_login import (
     LoginManager, UserMixin,
     login_user, logout_user, login_required, current_user
 )
+from flask_mail import Mail, Message
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from itsdangerous import URLSafeTimedSerializer
-from flask_mail import Mail, Message
 from openai import OpenAI
+from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from wtforms import StringField, PasswordField, SelectField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Length, EqualTo
 
+from utils.ai_feedback import get_ctf_feedback
 from utils.ctf_missions import MISSIONS
 from utils.pdf_export import export_to_pdf, sanitize_filename
-
 from utils.save_ctf_response import save_ctf_report
-from utils.ai_feedback import get_ctf_feedback
 from utils.walkthroughs import WALKTHROUGHS
-
-from itsdangerous import URLSafeTimedSerializer
-
-import datetime
+from flask_migrate import Migrate
 
 load_dotenv()
 
@@ -65,6 +63,8 @@ app.config.update(
 mail = Mail(app)
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -79,12 +79,20 @@ class User(db.Model, UserMixin):
     last_name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     role = db.Column(db.String(20), nullable=False)
+    profile_image = db.Column(db.String(255), default=None, nullable=True)
 
     def set_password(self, raw):
         self.password = generate_password_hash(raw)
 
     def check_password(self, raw):
         return check_password_hash(self.password, raw)
+
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Текуща парола', validators=[DataRequired()])
+    new_password = PasswordField('Нова парола', validators=[DataRequired(), Length(min=6)])
+    confirm = PasswordField('Потвърди новата парола', validators=[EqualTo('new_password')])
+    submit = SubmitField('Запази')
 
 
 @login_manager.user_loader
@@ -800,6 +808,7 @@ def dashboard_data():
             "последно участие": last
         })
 
+
 @app.route("/api/student-activity")
 @login_required
 def student_activity():
@@ -819,6 +828,70 @@ def student_activity():
 
     return jsonify(timeline)
 
+
+@app.route("/profile/upload", methods=["POST"])
+@login_required
+def upload_photo():
+    photo = request.files.get("photo")
+    if not photo:
+        flash("Моля, избери снимка.", "warning")
+        return redirect(url_for("profile"))
+
+    if not photo.filename.lower().endswith((".png", ".jpg", ".jpeg")):
+        flash("Позволени формати: PNG, JPG, JPEG", "danger")
+        return redirect(url_for("profile"))
+
+    filename = f"{current_user.username}_{photo.filename}"
+    upload_path = os.path.join("static", "uploads")
+    os.makedirs(upload_path, exist_ok=True)
+    photo.save(os.path.join(upload_path, filename))
+
+    current_user.profile_image = filename
+    db.session.commit()
+    flash("Снимката е обновена успешно!", "success")
+    return redirect(url_for("profile"))
+
+
+@app.route('/change-password', methods=['POST'])
+@login_required
+def change_password():
+    old = request.form.get('old_password')
+    new = request.form.get('new_password')
+    confirm = request.form.get('confirm_password')
+
+    if not current_user.check_password(old):
+        flash("Incorrect current password.", "danger")
+        return redirect(url_for('profile'))
+
+    if new != confirm:
+        flash("Passwords do not match.", "warning")
+        return redirect(url_for('profile'))
+
+    current_user.set_password(new)
+    db.session.commit()
+    flash("Password changed successfully.", "success")
+    return redirect(url_for('profile'))
+
+
+@app.route('/update-profile', methods=['POST'])
+@login_required
+def update_profile():
+    first = request.form.get('first_name')
+    last = request.form.get('last_name')
+
+    if first: current_user.first_name = first
+    if last: current_user.last_name = last
+
+    if 'profile_image' in request.files:
+        image = request.files['profile_image']
+        if image.filename:
+            os.makedirs("static/uploads", exist_ok=True)
+            img_path = os.path.join("static", "uploads", f"{current_user.username}.jpg")
+            image.save(img_path)
+
+    db.session.commit()
+    flash("Profile updated successfully!", "success")
+    return redirect(url_for('profile'))
 
 
 if __name__ == "__main__":
