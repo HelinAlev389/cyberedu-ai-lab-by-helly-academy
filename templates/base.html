@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="bg">
 <head>
-  {% set layout_visible = current_user.is_authenticated and request.endpoint not in ['login', 'register', 'forgot_password'] %}
+  {% set layout_visible = current_user.is_authenticated and request.endpoint not in ['auth.login', 'auth.register', 'auth.forgot_password'] %}
   <meta charset="UTF-8">
   <title>{% block title %}CyberEdu AI Lab{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,37 +18,40 @@
     <h4 class="text-center text-light py-3">CyberEdu</h4>
     <ul class="nav flex-column text-light px-3">
       <li class="nav-item mb-2">
-        <a class="nav-link text-light {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+        <a class="nav-link text-light {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}" href="{{ url_for('dashboard.dashboard') }}">
           <i class="fas fa-home me-2"></i> Начало
         </a>
       </li>
+      <li class="nav-item">
+      <a class="nav-link text-light {% if request.endpoint == 'siem.dashboard' %}active{% endif %}"
+         href="{{ url_for('siem.dashboard') }}">SIEM Dashboard</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link text-light {% if request.endpoint == 'siem.export_pdf' %}active{% endif %}"
+         href="{{ url_for('siem.export_pdf') }}">Export PDF</a>
+    </li>
       <li class="nav-item mb-2">
-        <a class="nav-link text-light {% if request.endpoint == 'siem_dashboard' %}active{% endif %}" href="{{ url_for('siem_dashboard') }}">
-          <i class="fas fa-chart-bar me-2"></i> SIEM Анализатор
-        </a>
-      </li>
-      <li class="nav-item mb-2">
-        <a class="nav-link text-light {% if request.endpoint == 'ctf_overview' %}active{% endif %}" href="{{ url_for('ctf_overview') }}">
+        <a class="nav-link text-light {% if request.endpoint == 'ctf.overview' %}active{% endif %}" href="{{ url_for('ctf.overview') }}">
           <i class="fas fa-flag me-2"></i> CTF Мисии
         </a>
       </li>
       <li class="nav-item mb-2">
-        <a class="nav-link text-light {% if request.endpoint == 'leaderboard' %}active{% endif %}" href="{{ url_for('leaderboard') }}">
+        <a class="nav-link text-light {% if request.endpoint == 'dashboard.leaderboard' %}active{% endif %}" href="{{ url_for('dashboard.leaderboard') }}">
           🏆 Leaderboard
         </a>
       </li>
       <li class="nav-item mb-2">
-        <a class="nav-link text-light {% if request.endpoint == 'reports' %}active{% endif %}" href="{{ url_for('reports') }}">
+        <a class="nav-link text-light {% if request.endpoint == 'siem.export_pdf' %}active{% endif %}" href="{{ url_for('siem.export_pdf') }}">
           <i class="fas fa-file-alt me-2"></i> Отчети
         </a>
       </li>
       <li class="nav-item mb-2">
-        <a class="nav-link text-light {% if request.endpoint == 'walkthrough_list' %}active{% endif %}" href="{{ url_for('walkthrough_list') }}">
+        <a class="nav-link text-light {% if request.endpoint == 'walkthrough.walkthrough_list' %}active{% endif %}" href="{{ url_for('walkthrough.walkthrough_list') }}">
           <i class="fas fa-route me-2"></i> Walkthrough Анализи
         </a>
       </li>
       <li class="nav-item mb-2">
-        <a class="nav-link text-light {% if request.endpoint == 'profile' %}active{% endif %}" href="{{ url_for('profile') }}">
+        <a class="nav-link text-light {% if request.endpoint == 'profile.profile' %}active{% endif %}" href="{{ url_for('profile.profile') }}">
           <i class="fas fa-user me-2"></i> Моят профил
         </a>
       </li>
@@ -68,10 +71,8 @@
         </a>
       </li>
 
-
-
       <li class="nav-item mt-3">
-        <a class="nav-link text-light" href="{{ url_for('logout') }}">
+        <a class="nav-link text-light" href="{{ url_for('auth.logout') }}">
           <i class="fas fa-sign-out-alt me-2"></i> Изход
         </a>
       </li>
@@ -99,8 +100,8 @@
             <i class="fas fa-user-circle me-1"></i> {{ current_user.first_name }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{{ url_for('profile') }}">Моят профил</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Изход</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">Моят профил</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Изход</a></li>
           </ul>
         </div>
       </div>

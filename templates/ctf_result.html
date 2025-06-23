@@ -1,25 +1,27 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
-  <h2>✅ Отговорите са записани успешно!</h2>
+  <h2>Отговорите са записани успешно!</h2>
 
   {% if filename %}
     <p>Можеш да изтеглиш твоя PDF доклад:</p>
-    <a href="{{ url_for('download_ctf_pdf', filename=filename) }}" class="btn btn-outline-primary">
+    <a href="{{ url_for('ctf.download', filename=filename) }}" class="btn btn-outline-primary">
       📄 Изтегли PDF: {{ filename }}
     </a>
   {% else %}
     <p class="text-danger">Не е открит PDF файл за изтегляне.</p>
   {% endif %}
 
-  {% if session.ai_feedback %}
+  {% if session.get('ai_feedback') %}
     <hr>
     <h4>🤖 AI Обратна връзка:</h4>
     <div class="alert alert-info" style="white-space: pre-wrap;">
-      {{ session.ai_feedback }}
+      {{ session.get('ai_feedback') }}
     </div>
   {% endif %}
 
-  <a href="{{ url_for('ctf_overview') }}" class="btn btn-secondary mt-3">🔙 Обратно към всички мисии</a>
+  <a href="{{ url_for('ctf.overview') }}" class="btn btn-secondary mt-3">
+    🔙 Обратно към всички мисии
+  </a>
 </div>
 {% endblock %}

@@ -1,21 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Вход – CyberEdu AI Lab{% endblock %}
+
+{% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 
 <div class="login-wrapper">
   <div class="login-left">
     <canvas id="particles-canvas"></canvas>
-
     <div class="particle" style="top: 70%; left: 80%;"></div>
     <div class="particle" style="top: 30%; left: 60%;"></div>
     <div class="particle" style="top: 85%; left: 15%;"></div>
-
     <img src="{{ url_for('static', filename='assets/logo-wide.png') }}" class="logo" alt="Helly Academy Logo">
 
     <div class="tagline">
       <h2>AI-POWERED.<br>HACKER-PROOF.<br>ALWAYS ON.</h2>
-<a href="{{ url_for('register') }}" class="btn btn-link signup-link">SIGN UP</a>
-
-
+      <a href="{{ url_for('auth.register') }}" class="btn btn-link signup-link">SIGN UP</a>
     </div>
   </div>
 
@@ -24,105 +25,100 @@
 
     <div class="login-form-box">
       <h3>LOG IN TO SECURE NODE</h3>
-      <form method="POST" action="{{ url_for('login') }}">
+      <form method="POST" action="{{ url_for('auth.login') }}">
         {{ form.hidden_tag() }}
 
-        <div class="input-group">
-          <i class="fas fa-envelope"></i>
+        <div class="input-group mb-3">
+          <i class="fas fa-user me-2"></i>
           {{ form.username(class="form-control", placeholder="Email or User ID") }}
         </div>
 
-        <div class="input-group">
-          <i class="fas fa-lock"></i>
+        <div class="input-group mb-3">
+          <i class="fas fa-lock me-2"></i>
           {{ form.password(class="form-control", placeholder="Password") }}
         </div>
 
-        <div class="input-group">
-          <i class="fas fa-key"></i>
+        <div class="input-group mb-3">
+          <i class="fas fa-key me-2"></i>
           {{ form.otp(class="form-control", placeholder="2FA Code (if required)") }}
         </div>
 
-        <div class="form-footer">
-          <label class="remember">
-            {{ form.remember_me }} Remember me
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <label class="form-check-label">
+            {{ form.remember_me(class="form-check-input me-1") }} Remember me
           </label>
-          <a href="{{ url_for('forgot_password') }}" class="forgot">
-            <i class="fas fa-key"></i> Forgot password?
+          <a href="{{ url_for('auth.forgot_password') }}" class="forgot-link">
+            <i class="fas fa-key me-1"></i> Forgot password?
           </a>
         </div>
 
-        {{ form.submit(class="login-btn") }}
+        <div class="d-grid">
+          {{ form.submit(class="btn btn-primary login-btn") }}
+        </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Make sure this CSS exists in your login.css -->
 <style>
-  .signup-link {
-    color: #f5c054;
-    font-weight: bold;
-    text-decoration: none;
-    margin-left: 4px;
-    transition: 0.2s ease-in-out;
-  }
-
-  .signup-link:hover {
-    color: #FFD700;
-    text-decoration: none;
-  }
+.signup-link {
+  color: #f5c054;
+  font-weight: bold;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+.signup-link:hover {
+  color: #FFD700;
+  text-decoration: none;
+}
+.forgot-link {
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+.forgot-link:hover {
+  text-decoration: underline;
+}
 </style>
 
 <script>
+// particle init code unchanged
 function initParticles(canvasId) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
-
   const ctx = canvas.getContext("2d");
   const isLeft = canvasId.includes("left");
-  canvas.width = window.innerWidth / 2;
-  canvas.height = window.innerHeight;
-
+  resize();
+  window.addEventListener("resize", resize);
+  function resize() {
+    canvas.width = window.innerWidth / 2;
+    canvas.height = window.innerHeight;
+  }
   let particles = Array.from({ length: 100 }, () => ({
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height,
-    radius: Math.random() * 1.5,
-    alpha: Math.random(),
+    r: Math.random() * 1.5,
+    a: Math.random(),
     dx: (Math.random() - 0.5) * 0.1,
     dy: (Math.random() - 0.5) * 0.1,
   }));
-
   function draw() {
-    if (isLeft) {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    } else {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    for (let p of particles) {
+    isLeft
+      ? ctx.fillRect(0, 0, canvas.width, canvas.height)
+      : ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(245, 192, 84, ${p.alpha})`;
+      ctx.arc(p.x, p.y, p.r, 0, 2 * Math.PI);
+      ctx.fillStyle = `rgba(245, 192, 84, ${p.a})`;
       ctx.fill();
-
-      p.x += p.dx;
-      p.y += p.dy;
-
+      p.x += p.dx; p.y += p.dy;
       if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
       if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
-    }
+    });
     requestAnimationFrame(draw);
   }
-
   draw();
-
-  window.addEventListener("resize", () => {
-    canvas.width = window.innerWidth / 2;
-    canvas.height = window.innerHeight;
-  });
 }
-
 initParticles("particles-canvas");
 initParticles("particles-canvas-right");
 </script>
+{% endblock %}

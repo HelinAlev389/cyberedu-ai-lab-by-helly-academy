@@ -8,7 +8,7 @@
       <li class="list-group-item">
         <h5>{{ wt.title }}</h5>
         <p>{{ wt.description }}</p>
-        <a href="{{ url_for('walkthrough', walk_id=key) }}" class="btn btn-outline-primary btn-sm">Преглед</a>
+        <a href="{{ url_for('walkthrough.walkthrough', walk_id=key) }}" class="btn btn-outline-primary btn-sm">Преглед</a>
       </li>
     {% endfor %}
   </ul>
