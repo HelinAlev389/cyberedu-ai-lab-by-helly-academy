@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <div class="card p-4 shadow-sm rounded-4">
+    <h2>{{ title }}</h2>
+    <hr>
+    <p>{{ content }}</p>
+
+    <form class="mb-3">
+  <select name="lesson_id" class="form-select"
+          onchange="this.form.submit()">
+    {% for lid in available_lessons %}
+      <option value="{{ lid }}" {{ 'selected' if lid == current_id else '' }}>
+        {{ lid }}
+      </option>
+    {% endfor %}
+  </select>
+</form>
+
+
+    {# --- Ако тази стъпка очаква вход -- #}
+    {% if expect_input %}
+      <form method="POST" class="mt-3">
+        <div class="mb-3">
+          <textarea class="form-control" name="user_answer" rows="4"
+                    placeholder="Твоят отговор..." required>{{ prev_answer|default("") }}</textarea>
+        </div>
+        <button class="btn btn-success" name="action" value="submit_answer">Изпрати отговор</button>
+        <button class="btn btn-secondary" name="action" value="skip">Прескочи</button>
+      </form>
+    {% else %}
+      <form method="POST" class="d-flex gap-2 mt-3">
+        <button class="btn btn-secondary" name="action" value="back">⬅️ Назад</button>
+        <button class="btn btn-primary" name="action" value="next">➡️ Следващ</button>
+        <button class="btn btn-warning" name="action" value="restart">🔄 Рестарт</button>
+      </form>
+    {% endif %}
+
+    # --- Показване на AI feedback, ако има -- #
+    {% if feedback %}
+      <div class="alert alert-info mt-4">
+        <strong>AI Feedback:</strong><br>
+        {{ feedback }}
+      </div>
+      <form method="POST">
+        <button class="btn btn-primary" name="action" value="next">➡️ Следващ</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

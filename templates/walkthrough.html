@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{{ scenario.title }}</h2>
+<p>{{ scenario.description }}</p>
+
+{% if log_data %}
+  <h5>📄 Log файл:</h5>
+  <pre><code>{{ log_data | tojson(indent=2) }}</code></pre>
+{% endif %}
+
+{% if scenario.steps %}
+  <div id="walkthrough-container" class="mt-4">
+    <div id="step-box" class="card p-3 mb-3">
+      <h5 id="step-title"></h5>
+      <textarea id="answer-input" class="form-control mt-2 mb-3" rows="4" placeholder="Въведи отговора си..."></textarea>
+      <button id="next-btn" class="btn btn-primary">Следваща стъпка</button>
+    </div>
+  </div>
+  <div id="ai-feedback" class="mt-4"></div>
+{% endif %}
+
+<script>
+  const steps = {{ scenario.steps | tojson }};
+  let currentStep = 0;
+  let answers = [];
+
+  const stepTitle = document.getElementById("step-title");
+  const answerInput = document.getElementById("answer-input");
+  const nextBtn = document.getElementById("next-btn");
+
+  function showStep(index) {
+    stepTitle.textContent = `${index + 1}. ${steps[index]}`;
+    answerInput.value = "";
+    answerInput.focus();
+  }
+
+  nextBtn.addEventListener("click", async () => {
+    const ans = answerInput.value.trim();
+    if (!ans) return alert("Моля въведи отговор.");
+
+    answers.push(ans);
+    currentStep++;
+
+    if (currentStep < steps.length) {
+      showStep(currentStep);
+    } else {
+      document.getElementById("walkthrough-container").innerHTML = "<p>⏳ Изпращане на отговорите за анализ...</p>";
+
+      const res = await fetch("/ai-walkthrough-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers })
+      });
+
+      const data = await res.json();
+
+      document.getElementById("ai-feedback").innerHTML = `
+        <h4>🧠 AI Оценка</h4>
+        <div class="alert alert-info" id="feedback-content">${data.feedback.replaceAll("\n", "<br>")}</div>
+
+        <div class="mt-4 d-flex flex-wrap gap-2">
+          <a href="${location.pathname}" class="btn btn-outline-secondary">🔁 Повтори мисията</a>
+          <a href="/walkthroughs" class="btn btn-outline-primary">🏠 Върни се към главното меню</a>
+          <button class="btn btn-outline-success" onclick="exportPDF()">📄 Изтегли PDF отчет</button>
+        </div>
+      `;
+    }
+  });
+
+  // 🟢 Изнесена функция (глобално достъпна)
+  async function exportPDF() {
+    const feedback = document.getElementById("feedback-content").innerText;
+    const res = await fetch("/walkthrough-pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        steps: steps,
+        answers: answers,
+        feedback: feedback
+      })
+    });
+
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "walkthrough_report.pdf";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } else {
+      alert("Грешка при генериране на PDF.");
+    }
+  }
+
+  // 🔹 Стартирай
+  showStep(currentStep);
+</script>
+
+
+{% endblock %}

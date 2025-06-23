@@ -1,0 +1,37 @@
+[
+  {
+    "timestamp": "2025-05-12T20:11:03Z",
+    "event_type": "failed_login",
+    "user": "student01",
+    "action": "login failed",
+    "location": "WebServer-01"
+  },
+  {
+    "timestamp": "2025-05-12T20:12:13Z",
+    "event_type": "account_lockout",
+    "user": "student01",
+    "action": "account locked after 5 failed attempts",
+    "location": "WebServer-01"
+  },
+  {
+    "timestamp": "2025-05-12T20:15:30Z",
+    "event_type": "privilege_escalation",
+    "user": "admin01",
+    "action": "added to Administrators group",
+    "location": "DomainController-01"
+  },
+  {
+    "timestamp": "2025-05-12T20:20:10Z",
+    "event_type": "suspicious",
+    "user": "student02",
+    "action": "executed unusual script",
+    "location": "Client-PC-07"
+  },
+  {
+    "timestamp": "2025-05-12T20:25:42Z",
+    "event_type": "failed_login",
+    "user": "student03",
+    "action": "login failed",
+    "location": "WebServer-01"
+  }
+]

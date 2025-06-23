@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация – CyberEdu AI Lab{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+<div class="login-wrapper">
+  <div class="login-left">
+    <canvas id="particles-canvas"></canvas>
+    <img src="{{ url_for('static', filename='assets/logo-wide.png') }}" class="logo" alt="Helly Academy Logo">
+
+    <div class="tagline">
+      <h2>AI-POWERED.<br>HACKER-PROOF.<br>ALWAYS ON.</h2>
+      <p>Вече имаш акаунт? <a href="{{ url_for('auth.login') }}" class="login-link">Влез тук</a></p>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <canvas id="particles-canvas-right"></canvas>
+
+    <div class="login-form-box">
+      <h3>Създай акаунт</h3>
+
+      <form method="POST" action="{{ url_for('auth.register') }}">
+        {{ form.hidden_tag() }}
+
+        <div class="input-group mb-3">
+          <i class="fas fa-user me-2"></i>
+          {{ form.first_name(class="form-control", placeholder="Име") }}
+        </div>
+
+        <div class="input-group mb-3">
+          <i class="fas fa-user me-2"></i>
+          {{ form.last_name(class="form-control", placeholder="Фамилия") }}
+        </div>
+
+        <div class="input-group mb-3">
+          <i class="fas fa-user-circle me-2"></i>
+          {{ form.username(class="form-control", placeholder="Потребителско име") }}
+        </div>
+
+        <div class="input-group mb-3">
+          <i class="fas fa-envelope me-2"></i>
+          {{ form.email(class="form-control", placeholder="Имейл") }}
+        </div>
+
+        <div class="input-group mb-3">
+          <i class="fas fa-lock me-2"></i>
+          {{ form.password(class="form-control", placeholder="Парола") }}
+        </div>
+
+        <div class="input-group mb-3">
+          <i class="fas fa-lock me-2"></i>
+          {{ form.confirm_password(class="form-control", placeholder="Потвърди парола") }}
+        </div>
+
+        <div class="input-group mb-4">
+          <i class="fas fa-user-shield me-2"></i>
+          {{ form.role(class="form-select") }}
+        </div>
+
+        <div class="d-grid">
+          {{ form.submit(class="btn btn-primary login-btn") }}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='particles.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  {% set layout_visible = current_user.is_authenticated and request.endpoint not in ['auth.login', 'auth.register', 'auth.forgot_password'] %}
+  <meta charset="UTF-8">
+  <title>{% block title %}CyberEdu AI Lab{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="d-flex">
+
+{% if layout_visible %}
+  <!--  Sidebar -->
+  <aside class="sidebar bg-primary">
+    <h4 class="text-center text-light py-3">CyberEdu</h4>
+    <ul class="nav flex-column text-light px-3">
+      <li class="nav-item mb-2">
+        <a class="nav-link text-light {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}" href="{{ url_for('dashboard.dashboard') }}">
+          <i class="fas fa-home me-2"></i> Начало
+        </a>
+      </li>
+      <li class="nav-item">
+      <a class="nav-link text-light {% if request.endpoint == 'siem.dashboard' %}active{% endif %}"
+         href="{{ url_for('siem.dashboard') }}">SIEM Dashboard</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link text-light {% if request.endpoint == 'siem.export_pdf' %}active{% endif %}"
+         href="{{ url_for('siem.export_pdf') }}">Export PDF</a>
+    </li>
+      <li class="nav-item mb-2">
+        <a class="nav-link text-light {% if request.endpoint == 'ctf.overview' %}active{% endif %}" href="{{ url_for('ctf.overview') }}">
+          <i class="fas fa-flag me-2"></i> CTF Мисии
+        </a>
+      </li>
+      <li class="nav-item mb-2">
+        <a class="nav-link text-light {% if request.endpoint == 'dashboard.leaderboard' %}active{% endif %}" href="{{ url_for('dashboard.leaderboard') }}">
+          🏆 Leaderboard
+        </a>
+      </li>
+      <li class="nav-item mb-2">
+        <a class="nav-link text-light {% if request.endpoint == 'siem.export_pdf' %}active{% endif %}" href="{{ url_for('siem.export_pdf') }}">
+          <i class="fas fa-file-alt me-2"></i> Отчети
+        </a>
+      </li>
+      <li class="nav-item mb-2">
+        <a class="nav-link text-light {% if request.endpoint == 'walkthrough.walkthrough_list' %}active{% endif %}" href="{{ url_for('walkthrough.walkthrough_list') }}">
+          <i class="fas fa-route me-2"></i> Walkthrough Анализи
+        </a>
+      </li>
+      <li class="nav-item mb-2">
+        <a class="nav-link text-light {% if request.endpoint == 'profile.profile' %}active{% endif %}" href="{{ url_for('profile.profile') }}">
+          <i class="fas fa-user me-2"></i> Моят профил
+        </a>
+      </li>
+
+      {% if current_user.role == 'admin' %}
+      <li class="nav-item text-uppercase small mt-3">Администриране</li>
+      <li class="nav-item">
+        <a class="nav-link text-light" href="{{ url_for('user_management') }}">
+          <i class="fas fa-users-cog me-2"></i> Управление на потребители
+        </a>
+      </li>
+      {% endif %}
+
+      <li class="nav-item mb-2">
+        <a class="nav-link text-light" href="#" onclick="toggleChat()">
+          <i class="fas fa-robot me-2"></i> AI Асистент
+        </a>
+      </li>
+
+      <li class="nav-item mt-3">
+        <a class="nav-link text-light" href="{{ url_for('auth.logout') }}">
+          <i class="fas fa-sign-out-alt me-2"></i> Изход
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Main wrapper -->
+  <div class="main-wrapper flex-grow-1 d-flex flex-column">
+
+    <!--  Topbar -->
+    <nav class="topbar d-flex justify-content-between align-items-center px-4 py-2 shadow-sm">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-light d-md-none" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <input type="text" class="form-control d-none d-md-block" placeholder="Търсене...">
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-sm btn-outline-light" onclick="toggleTheme()" title="Смяна на тема">
+          <i class="fas fa-adjust"></i>
+        </button>
+        <i class="fas fa-bell text-light"></i>
+        <div class="dropdown">
+          <a href="#" class="dropdown-toggle text-light" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i> {{ current_user.first_name }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">Моят профил</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Изход</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+{% endif %}
+
+    <!--  Main content -->
+    <main class="p-4 flex-grow-1">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+
+    {% if current_user.is_authenticated %}
+    <!--  Chat widget -->
+    <div id="chat-widget" style="position:fixed; bottom:20px; right:20px; z-index:1000;">
+      <button class="btn btn-primary" onclick="toggleChat()">💬 AI Асистент</button>
+      <div id="chat-box" style="display:none; width:300px; background:white; padding:10px; border:1px solid #ccc; border-radius:10px; margin-top:10px;">
+        <div id="chat-messages" style="max-height:200px; overflow-y:auto; color: black;"></div>
+        <input type="text" id="chat-input" class="form-control mt-2" placeholder="Попитай нещо..." onkeypress="if(event.key==='Enter') sendMessage()" />
+      </div>
+    </div>
+    {% endif %}
+
+    <!--  Footer -->
+    <footer class="text-center p-3 bg-dark text-light mt-auto">
+      Helly Academy © 2025 | Cyber Security AI Training Lab
+    </footer>
+
+  </div>
+
+<!-- Scripts -->
+<script>
+  function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('collapsed');
+  }
+
+  function toggleTheme() {
+    const body = document.body;
+    const isDark = body.classList.contains('dark-theme');
+    body.classList.toggle('dark-theme', !isDark);
+    body.classList.toggle('light-theme', isDark);
+    localStorage.setItem('theme', !isDark ? 'dark' : 'light');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const theme = localStorage.getItem('theme') || 'dark';
+    document.body.classList.add(theme === 'dark' ? 'dark-theme' : 'light-theme');
+  });
+</script>
+
+</body>
+</html>

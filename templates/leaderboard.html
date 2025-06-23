@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>🏆 Leaderboard – Точки от CTF мисии</h2>
+  <table class="table table-bordered mt-3">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Потребител</th>
+        <th>Общо точки</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for score in scores %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ score.username }}</td>
+        <td>{{ score.total_points }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

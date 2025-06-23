@@ -1,48 +1,54 @@
-from flask import Flask, request, jsonify, render_template
-from openai import OpenAI
+from flask import Flask, redirect, url_for
+from config import Config
+from extensions import db, migrate, login_manager, mail
+from blueprints import register_blueprints
 import os
-from dotenv import load_dotenv
 
+def create_app():
+    app = Flask(__name__, static_folder="static")
+    app.config.from_object(Config)
 
-app = Flask(__name__)
-client = OpenAI()
+    # ——— set up absolute path for SQLite DB ———
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    db_path = os.path.join(basedir, 'data', 'app.db')
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
+    # note: three slashes + absolute path gives 'sqlite:///C:/...'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
+    # optional but helpful: echo SQL to console
+    app.config['SQLALCHEMY_ECHO'] = True
+    # ————————————————————————————————————————
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+    # initialize extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+    mail.init_app(app)
+    login_manager.login_view = 'auth.login'
 
+    # flask-login user loader
+    from models.user import User
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
-@app.route("/analyze-log", methods=["POST"])
-def analyze_log():
-    data = request.json
-    log = data.get("log", "")
+    # register blueprints
+    register_blueprints(app)
 
-    prompt = f"""
-You are an AI SOC Analyst designed to educate students on cyber incidents.
+    @app.route('/')
+    def home_redirect():
+        return redirect(url_for('auth.login'))
 
-Task:
-1. Identify the type of incident in the log (e.g., brute-force, phishing).
-2. Assess the risk level (Low, Medium, High).
-3. Explain what is happening in simple, educational language.
-4. Suggest a prevention or response recommendation.
-
-Here is the log to analyze:
-{log}
-"""
-
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a cybersecurity teacher and SOC analyst."},
-            {"role": "user", "content": prompt}
-        ]
-    )
-
-    return jsonify({"answer": response.choices[0].message.content})
+    return app
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app = create_app()
 
-load_dotenv()
+    # push context before creating tables
+    with app.app_context():
+        # debug output to verify the exact file path
+        print("DB URI:", app.config['SQLALCHEMY_DATABASE_URI'])
+        db.create_all()
+
+    app.run(debug=True)

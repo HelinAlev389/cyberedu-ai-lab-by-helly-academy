@@ -1,0 +1,9 @@
+[
+  {
+    "timestamp": "2025-05-14T10:34:21Z",
+    "event_type": "account_lockout",
+    "user": "student05",
+    "action": "Account locked after 5 failed attempts",
+    "location": "WebServer-01"
+  }
+]
