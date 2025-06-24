@@ -1,0 +1,37 @@
+<!--публичен или учебен изглед на урока -->
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- EasyMDE CSS -->
+<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+
+  <div class="container mt-4">
+  <h2 class="mb-3">{{ lesson.title }}</h2>
+  <p><span class="badge bg-secondary">{{ lesson.topic }}</span></p>
+
+  <div class="lesson-content p-4 rounded shadow-sm bg-light border">
+    {{ html_content | safe }}
+  </div>
+
+     <hr class="my-4">
+
+  {% if recommended %}
+    <h4>📌 Препоръчани уроци</h4>
+    <ul class="list-group">
+      {% for lesson in recommended %}
+        <li class="list-group-item">
+          <a href="{{ url_for('teacher_dashboard.view_lesson', lesson_id=lesson.id) }}">{{ lesson.title }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <a href="{{ url_for('teacher_dashboard.manage_lessons') }}" class="btn btn-outline-primary mt-4">← Назад към уроци</a>
+</div>
+<!-- EasyMDE JS -->
+
+<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% set topic_styles = {
+  'Cybersecurity': {'color': 'danger', 'icon': '🔐'},
+  'Networking': {'color': 'primary', 'icon': '🌐'},
+  'Linux': {'color': 'dark', 'icon': '🐧'},
+  'Forensics': {'color': 'info', 'icon': '🕵️‍♂️'},
+  'Web': {'color': 'warning', 'icon': '🌐'},
+  'AI': {'color': 'success', 'icon': '🤖'}
+} %}
+
+<h2 class="mt-4">📚 Създай нов урок</h2>
+<form method="POST" class="mt-3">
+  {{ form.hidden_tag() }}
+  <div class="mb-3">
+    {{ form.title.label(class="form-label") }}
+    {{ form.title(class="form-control") }}
+  </div>
+  <div class="mb-3">
+    {{ form.topic.label(class="form-label") }}
+    {{ form.topic(class="form-select") }}
+  </div>
+  <div class="mb-3">
+    {{ form.content.label(class="form-label") }}
+    {{ form.content(class="form-control", rows=5) }}
+    <div class="form-text">Можеш да използваш Markdown или HTML</div>
+  </div>
+  <button type="submit" class="btn btn-primary">💾 Създай урок</button>
+</form>
+
+<hr class="my-4">
+
+<h3>Съществуващи уроци</h3>
+
+{% if lessons %}
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
+    {% for lesson in lessons %}
+      <div class="col">
+        <div class="card h-100 shadow-sm border border-{{ topic_styles.get(lesson.topic, {}).get('color', 'secondary') }}">
+          <div class="card-body">
+            <h5 class="card-title">{{ lesson.title }}</h5>
+            <p class="card-text text-muted">
+              <span class="badge bg-{{ topic_styles.get(lesson.topic, {}).get('color', 'secondary') }}">
+                {{ topic_styles.get(lesson.topic, {}).get('icon', '📘') }} {{ lesson.topic }}
+              </span>
+            </p>
+            <div class="d-flex justify-content-between mt-3">
+              <a href="{{ url_for('teacher_dashboard.view_lesson', lesson_id=lesson.id) }}" class="btn btn-sm btn-outline-primary">👁️</a>
+              <a href="{{ url_for('teacher_dashboard.edit_lesson', lesson_id=lesson.id) }}" class="btn btn-sm btn-outline-warning">✏️</a>
+              <form method="POST" action="{{ url_for('teacher_dashboard.delete_lesson', lesson_id=lesson.id) }}" style="display:inline;" onsubmit="return confirm('Наистина ли искаш да изтриеш този урок?');">
+                <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">❗ Все още няма създадени уроци.</p>
+{% endif %}
+
+<!-- Markdown Editor -->
+<script>
+  const editor = new EasyMDE({
+    element: document.querySelector('textarea[name="content"]'),
+    imageUpload: true,
+    imagePath: "/uploads/",
+    uploadImage: true,
+    toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "preview", "guide"]
+  });
+</script>
+
+{% endblock %}

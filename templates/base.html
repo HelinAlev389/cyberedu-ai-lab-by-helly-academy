@@ -22,6 +22,16 @@
           <i class="fas fa-home me-2"></i> Начало
         </a>
       </li>
+
+  {% if current_user.role == 'teacher' %}
+      <li>
+  <a href="{{ url_for('teacher_dashboard.dashboard') }}">Преподавателско табло</a>
+      </li>
+      {% endif %}
+
+
+
+
       <li class="nav-item">
       <a class="nav-link text-light {% if request.endpoint == 'siem.dashboard' %}active{% endif %}"
          href="{{ url_for('siem.dashboard') }}">SIEM Dashboard</a>

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">📈 Прогрес на студентите</h2>
+
+<div class="row row-cols-1 row-cols-md-2 g-4">
+  {% for user in users %}
+    <div class="col">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-primary text-white">
+          👤 {{ user.username }}
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for entry in progress.get(user.id, []) %}
+            <li class="list-group-item">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="fw-bold">{{ entry.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+                  <div><em>{{ entry.tag or "Без етикет" }}</em></div>
+                  <div class="text-muted small">{{ entry.content[:100] if entry.content else "Без съдържание" }}</div>
+                </div>
+                {% if entry.score is not none %}
+                  <span class="badge rounded-pill bg-{{ 'success' if entry.score >= 80 else 'warning' if entry.score >= 50 else 'danger' }}">
+                    {{ entry.score }}%
+                  </span>
+                {% endif %}
+              </div>
+            </li>
+          {% else %}
+            <li class="list-group-item text-muted">❗ Няма записани действия.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

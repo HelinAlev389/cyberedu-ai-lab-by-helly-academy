@@ -1,8 +1,5 @@
 # models/ai_memory.py
-
 from extensions import db
-from datetime import datetime
-from sqlalchemy.dialects.sqlite import JSON  # или postgresql.JSON ако си на PostgreSQL
 
 
 class AIMemory(db.Model):
@@ -10,8 +7,10 @@ class AIMemory(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    session_id = db.Column(db.Integer, db.ForeignKey('ai_session.id'), nullable=False)
-    text = db.Column(db.Text, nullable=False)
-    embedding = db.Column(JSON, nullable=False)
-    tags = db.Column(JSON, default=[])
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    session_id = db.Column(db.Integer, db.ForeignKey('ai_session.id'), nullable=True)
+    tag = db.Column(db.String(255))
+    content = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=db.func.now())
+    score = db.Column(db.Integer, nullable=True)
+    user = db.relationship('User', backref='memories')
+

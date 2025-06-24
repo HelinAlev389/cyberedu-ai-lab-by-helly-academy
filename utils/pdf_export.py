@@ -14,7 +14,8 @@ def sanitize_filename(name: str) -> str:
 
 
 def export_to_pdf(log_text: str, gpt_response: str, filename: str):
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    if isinstance(filename, (str, bytes, os.PathLike)):
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     # ✅ Регистрация на шрифт с кирилица
     font_path = os.path.join("static", "fonts", "DejaVuSans.ttf")

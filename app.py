@@ -1,8 +1,10 @@
+import os
+
 from flask import Flask, redirect, url_for
 from config import Config
 from extensions import db, migrate, login_manager, mail
 from blueprints import register_blueprints
-import os
+
 
 
 def create_app():

@@ -16,22 +16,20 @@ def get_embedding(text: str, model="text-embedding-3-small"):
     return response.data[0].embedding
 
 
-def save_memory(user_id, session_id, text, tags=None):
-    emb = get_embedding(text)
+def save_memory(user_id, session_id, text, tags=None, score=None):
     mem = AIMemory(
         user_id=user_id,
         session_id=session_id,
-        text=text,
-        embedding=emb,
-        tags=tags or []
+        content=text,
+        tag=tags[0] if tags else None,
+        score=score
     )
     db.session.add(mem)
     db.session.commit()
 
 
-def search_memory(user_id, query_text, top_k=3):
-    query_vec = np.array(get_embedding(query_text)).reshape(1, -1)
-    all_mem = AIMemory.query.filter_by(user_id=user_id).all()
+def search_memory(user_id, query_text, top_k=3, query_vec=None):
+    all_mem = AIMemory.query.filter_by(user_id=user_id).order_by(AIMemory.created_at.desc()).limit(50).all()
 
     scored = []
     for mem in all_mem:
@@ -40,4 +38,4 @@ def search_memory(user_id, query_text, top_k=3):
         scored.append((mem.text, sim))
 
     scored.sort(key=lambda x: x[1], reverse=True)
-    return [txt for txt, _ in scored[:top_k]]
+    return [mem.content for mem in all_mem if mem.content][:top_k]

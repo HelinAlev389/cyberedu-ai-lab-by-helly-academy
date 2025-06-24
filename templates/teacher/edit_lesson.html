@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>✏️ Редактирай урок</h2>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+      {{ form.title.label(class="form-label") }}
+      {{ form.title(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.topic.label(class="form-label") }}
+      {{ form.topic(class="form-select") }}
+    </div>
+    <div class="mb-3">
+      {{ form.content.label(class="form-label") }}
+      {{ form.content(class="form-control", rows=6) }}
+    </div>
+    <button type="submit" class="btn btn-success">💾 Запази промените</button>
+    <a href="{{ url_for('teacher_dashboard.manage_lessons') }}" class="btn btn-secondary ms-2">Отказ</a>
+  </form>
+</div>
+{% endblock %}
