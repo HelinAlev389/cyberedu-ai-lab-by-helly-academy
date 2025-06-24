@@ -1,0 +1,14 @@
+<!-- templates/ai_scenario_list.html -->
+{% extends "base.html" %}
+{% block content %}
+  <h2>Избери сценарий</h2>
+  <ul class="list-group mt-3">
+    {% for sc in scenarios %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ sc.title }}
+        <a href="{{ url_for('ai_teacher.scenario', scenario_id=sc.id) }}"
+           class="btn btn-sm btn-primary">Старт</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

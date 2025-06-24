@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Начален урок</h2>
+<p>{{ lesson }}</p>
+<form id="quiz-form" method="POST" action="{{ url_for('ai_teacher.exercise') }}">
+  {% for q in quiz %}
+    <div class="mb-3">
+      <label for="q{{ q.id }}">{{ q.question }}</label>
+      <input name="q{{ q.id }}" id="q{{ q.id }}" class="form-control">
+    </div>
+  {% endfor %}
+  <button class="btn btn-primary">Провери</button>
+</form>
+
+{% endblock %}

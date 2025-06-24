@@ -14,3 +14,6 @@ fpdf~=1.7.2
 itsdangerous~=2.2.0
 lesson~=0.0.1
 alembic~=1.15.2
+services~=0.1.1
+numpy~=2.3.1
+scikit-learn~=1.7.0

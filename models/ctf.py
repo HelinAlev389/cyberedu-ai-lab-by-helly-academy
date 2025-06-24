@@ -9,3 +9,7 @@ class CTFResult(db.Model):
     tier = db.Column(db.String(10), nullable=False)
     points = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+
+class CTFMission:
+    pass

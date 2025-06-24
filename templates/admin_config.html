@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>AI Учител — Администраторски настройки</h2>
+  <form method="POST" class="mt-4">
+    {{ topic_form.hidden_tag() }}
+    <div class="mb-3">
+      {{ topic_form.topic.label(class="form-label") }}
+      {{ topic_form.topic(class="form-select") }}
+    </div>
+
+    {{ difficulty_form.hidden_tag() }}
+    <div class="mb-3">
+      {{ difficulty_form.difficulty.label(class="form-label") }}
+      {{ difficulty_form.difficulty(class="form-select") }}
+    </div>
+
+    {{ control_form.hidden_tag() }}
+    <div class="mb-3">
+      {{ control_form.checkpoint.label(class="form-label") }}
+      {{ control_form.checkpoint(class="form-control", min="0", max="100") }}
+      <div class="form-text">Минимумен успех, за да продължи към упражнения.</div>
+    </div>
+
+    <button class="btn btn-success">Запази настройките</button>
+    <a href="{{ url_for('ai_teacher.dashboard') }}" class="btn btn-secondary ms-2">Отказ</a>
+  </form>
+{% endblock %}

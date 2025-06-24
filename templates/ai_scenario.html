@@ -1,0 +1,26 @@
+<!-- templates/ai_scenario.html -->
+{% extends "base.html" %}
+{% block content %}
+  <h2>Сценарий: {{ scenario_id.replace('_',' ')|title }}</h2>
+  <h5>Стъпка {{ step }}</h5>
+
+  {% if instruction %}
+    <div class="alert alert-info">{{ instruction }}</div>
+  {% endif %}
+
+  {% if ai_reply %}
+    <div class="alert alert-success mt-3">
+      <strong>AI Feedback:</strong>
+      <pre style="white-space: pre-wrap;">{{ ai_reply }}</pre>
+    </div>
+  {% endif %}
+
+  <form method="POST" class="mt-4">
+    <div class="mb-3">
+      <label for="answer" class="form-label">Твоят отговор / действие:</label>
+      <textarea name="answer" id="answer" class="form-control" rows="3" required></textarea>
+    </div>
+    <button class="btn btn-primary">Изпрати</button>
+    <a href="{{ url_for('ai_teacher.dashboard') }}" class="btn btn-secondary ms-2">Отказ</a>
+  </form>
+{% endblock %}

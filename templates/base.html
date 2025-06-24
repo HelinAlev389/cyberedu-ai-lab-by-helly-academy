@@ -36,6 +36,11 @@
         </a>
       </li>
       <li class="nav-item mb-2">
+        <a class="nav-link text-light {% if request.endpoint.startswith('ai_teacher') %}active{% endif %}" href="{{ url_for('ai_teacher.dashboard') }}">
+          <i class="fas fa-robot me-2"></i> AI-Teacher
+        </a>
+      </li>
+      <li class="nav-item mb-2">
         <a class="nav-link text-light {% if request.endpoint == 'dashboard.leaderboard' %}active{% endif %}" href="{{ url_for('dashboard.leaderboard') }}">
           🏆 Leaderboard
         </a>
@@ -58,11 +63,7 @@
 
       {% if current_user.role == 'admin' %}
       <li class="nav-item text-uppercase small mt-3">Администриране</li>
-      <li class="nav-item">
-        <a class="nav-link text-light" href="{{ url_for('user_management') }}">
-          <i class="fas fa-users-cog me-2"></i> Управление на потребители
-        </a>
-      </li>
+
       {% endif %}
 
       <li class="nav-item mb-2">

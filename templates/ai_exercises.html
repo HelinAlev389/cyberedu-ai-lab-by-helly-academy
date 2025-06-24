@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Персонализирани упражнения</h2>
+
+  {% if exercises %}
+    <div class="mt-4">
+      <pre style="white-space: pre-wrap; background:#f8f9fa; padding:1rem; border-radius:4px;">
+{{ exercises }}
+      </pre>
+    </div>
+  {% else %}
+    <div class="alert alert-info mt-3">
+      Няма налични упражнения към момента.
+    </div>
+  {% endif %}
+
+  <a href="{{ url_for('ai_teacher.dashboard') }}" class="btn btn-secondary mt-3">
+    ← Обратно към Dashboard
+  </a>
+{% endblock %}

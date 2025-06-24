@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Виртуален AI учител</h2>
+<a href="{{ url_for('ai_teacher.lesson') }}"
+     class="btn btn-lg btn-primary mb-4">
+    📘 Започни урока
+  </a>
+<!-- Button to upload a JSON log for analysis -->
+<form id="upload-log-form"
+      action="{{ url_for('ai_teacher.upload_log') }}"
+      method="POST"
+      enctype="multipart/form-data"
+      class="mb-4">
+  <input type="file" name="logfile" accept=".json" required>
+  <button type="submit" class="btn btn-warning">📂 Качи лог за анализ</button>
+</form>
+
+<div id="chat-container">
+  <div id="messages"></div>
+  <input id="user-input" type="text" placeholder="Напиши съобщение...">
+  <button id="send-btn">Изпрати</button>
+</div>
+<script src="{{ url_for('static', filename='ai_teacher.js') }}"></script>
+{% endblock %}

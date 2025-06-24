@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Резултат от анализа на лога</h2>
+
+  <h5 class="mt-4">Log данни:</h5>
+  <pre class="bg-dark text-light p-3 rounded">{{ log }}</pre>
+
+  <h5 class="mt-4">AI обяснение:</h5>
+  <div class="bg-light p-3 rounded border" style="white-space: pre-wrap;">
+    {{ analysis }}
+  </div>
+
+  <a href="{{ url_for('ai_teacher.dashboard') }}" class="btn btn-secondary mt-3">
+    ← Обратно към Dashboard
+  </a>
+{% endblock %}

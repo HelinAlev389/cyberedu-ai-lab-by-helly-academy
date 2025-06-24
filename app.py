@@ -4,6 +4,7 @@ from extensions import db, migrate, login_manager, mail
 from blueprints import register_blueprints
 import os
 
+
 def create_app():
     app = Flask(__name__, static_folder="static")
     app.config.from_object(Config)
@@ -17,7 +18,6 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
     # optional but helpful: echo SQL to console
     app.config['SQLALCHEMY_ECHO'] = True
-    # ————————————————————————————————————————
 
     # initialize extensions
     db.init_app(app)

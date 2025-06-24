@@ -1,8 +1,8 @@
 import os
 
-from flask import Blueprint, render_template, request, flash, session, redirect, url_for, json
+from flask import Blueprint, render_template, request, flash, session, redirect, url_for, json, send_file
 from flask_login import login_required, current_user
-from models import CTFResult
+from models.ctf import CTFResult
 from utils.ctf_missions import MISSIONS
 from utils.ai_feedback import get_ctf_feedback
 from utils.save_ctf_response import save_ctf_report
