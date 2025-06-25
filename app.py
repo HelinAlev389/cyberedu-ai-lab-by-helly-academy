@@ -6,7 +6,6 @@ from extensions import db, migrate, login_manager, mail
 from blueprints import register_blueprints
 
 
-
 def create_app():
     app = Flask(__name__, static_folder="static")
     app.config.from_object(Config)

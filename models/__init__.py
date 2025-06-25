@@ -3,6 +3,9 @@ from .ctf import CTFMission, CTFResult   # import the real classes from models/c
 from .ai_session import AISession
 from .ai_memory import AIMemory
 from .lesson import Lesson
+from .lesson_progress import LessonProgress
+from .student_note import StudentNote
+
 
 __all__ = [
     "User",

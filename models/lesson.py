@@ -11,3 +11,7 @@ class Lesson(db.Model):
     content = db.Column(db.Text, nullable=False)  # Markdown content
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+def id():
+    return None

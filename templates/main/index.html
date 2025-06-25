@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5 text-center">
+  <h1 class="mb-4">👋 Добре дошли в CyberEdu AI Lab</h1>
+
+  {% if user.is_authenticated %}
+    <p class="lead">Здравей, {{ user.username }}!</p>
+    {% if user.role == 'teacher' %}
+      <a href="{{ url_for('teacher_dashboard.dashboard') }}" class="btn btn-primary">👩‍🏫 Към таблото на преподавателя</a>
+    {% elif user.role == 'student' %}
+      <a href="{{ url_for('student_dashboard.dashboard') }}" class="btn btn-success">🎓 Моето табло</a>
+    {% else %}
+      <p>Нямате табло за тази роля.</p>
+    {% endif %}
+  {% else %}
+    <p class="lead">Моля, влезте в акаунта си, за да започнете.</p>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">🔐 Вход</a>
+  {% endif %}
+</div>
+{% endblock %}

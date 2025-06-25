@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-1">{{ lesson.title }}</h2>
+  <p class="text-muted">{{ lesson.topic or 'Без тема' }}</p>
+
+  <div class="lesson-content border rounded p-3 mb-4" style="background: #f9f9f9;">
+    {{ lesson.content | safe }}
+  </div>
+
+  <!-- 📝 Бележки -->
+  <h5 class="mt-4">📝 Моите бележки</h5>
+  <form method="POST" onsubmit="syncLessonEditor()">
+    <input type="hidden" name="content" id="hidden-content">
+
+    {% if improved %}
+      <label class="form-label">✨ AI подобрена версия:</label>
+      <textarea name="improved_content" class="form-control mb-2" rows="6">{{ improved }}</textarea>
+      <div class="d-flex justify-content-between">
+        <button type="submit" name="action" value="save_ai" class="btn btn-success btn-sm">💾 Запази AI версията</button>
+        <a href="{{ url_for('student_dashboard.view_lesson', lesson_id=lesson.id) }}" class="btn btn-outline-secondary btn-sm">Отказ</a>
+      </div>
+    {% else %}
+      <div id="lesson-editor" class="quill-editor" style="height: 200px;">
+        {{ note.content | safe }}
+      </div>
+      <div class="d-flex justify-content-between mt-2">
+        <small class="text-muted">Обновено: {{ note.updated_at.strftime('%d.%m.%Y %H:%M') }}</small>
+        <div class="d-flex gap-2">
+          <button type="submit" name="action" value="save" class="btn btn-sm btn-success">💾 Запази</button>
+          <button type="submit" name="action" value="improve" class="btn btn-sm btn-warning">✨ Подобри с AI</button>
+        </div>
+      </div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}
