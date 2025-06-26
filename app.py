@@ -1,5 +1,7 @@
 import os
 from flask import Flask, redirect, url_for
+from flask_login import current_user
+
 from config import Config
 from extensions import db, migrate, login_manager, mail
 from flask_wtf import CSRFProtect
@@ -36,8 +38,16 @@ def create_app():
 
     @app.route('/')
     def home_redirect():
-        return redirect(url_for('auth.login'))
-
+        if current_user.is_authenticated:
+            # Пренасочи към таблото според ролята
+            if current_user.role == 'student':
+                return redirect(url_for('student_dashboard.dashboard'))
+            elif current_user.role == 'teacher':
+                return redirect(url_for('teacher_dashboard.dashboard'))
+            elif current_user.role == 'admin':
+                return redirect(url_for('admin_dashboard.dashboard'))
+        else:
+            return redirect(url_for('auth.login'))
 
     return app
 

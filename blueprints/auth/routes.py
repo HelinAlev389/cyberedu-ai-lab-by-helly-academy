@@ -34,8 +34,7 @@ def login():
 
         flash("Грешно потребителско име или парола.", "danger")
 
-    # ⚠️ това гарантира, че винаги се връща валиден отговор
-    return render_template('login.html', form=form)
+    return render_template("login.html", form=form)
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
