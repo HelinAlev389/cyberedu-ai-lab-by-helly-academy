@@ -91,7 +91,7 @@
       </script>
 
       <div class="alert alert-info mt-4">
-        ℹ️ Общо събития: <strong>{{ chart_data.values | sum }}</strong><br>
+        ℹ️ Общо събития: <strong>{{ chart_data['values'] | sum }}</strong>
         ℹ️ Видове събития: <strong>{{ chart_data.labels | length }}</strong>
       </div>
 

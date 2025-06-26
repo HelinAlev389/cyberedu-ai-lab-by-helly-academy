@@ -1,16 +1,22 @@
 import os
 import json
 import datetime
+import logging
 
 from flask import Blueprint, render_template, request, flash, redirect, url_for, send_file
 from flask_login import login_required
 from collections import Counter
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
 from utils.pdf_export import export_to_pdf, sanitize_filename
 
 siem_bp = Blueprint('siem', __name__, url_prefix='/siem')
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# initialize OpenAI client
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    logging.error("OPENAI_API_KEY is not set!")
+openai_client = OpenAI(api_key=api_key)
 
 
 @siem_bp.route('/', methods=['GET'])
@@ -18,7 +24,7 @@ openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 def dashboard():
     logs_path = os.path.join("instance", "logs")
     log_files = [f for f in os.listdir(logs_path) if f.endswith(".json")] if os.path.exists(logs_path) else []
-    return render_template("siem.html", log_files=log_files, chart_data=None)
+    return render_template("siem.html", log_files=log_files, chart_data=None, total_events=0)
 
 
 @siem_bp.route('/analyze', methods=['POST'])
@@ -27,59 +33,73 @@ def siem_analyze():
     logs_path = os.path.join("instance", "logs")
     logfile = request.form.get("logfile")
     filepath = os.path.join(logs_path, logfile)
-
     log_files = [f for f in os.listdir(logs_path) if f.endswith(".json")]
 
+    # Load and normalize your log JSON
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+            raw = json.load(f)
+        data = raw if isinstance(raw, list) else [raw]
+    except Exception as e:
+        flash(f"Грешка при зареждане на лог: {e}", "danger")
+        return render_template("siem.html", log_files=log_files, chart_data=None, total_events=0)
 
-        if isinstance(data, dict):
-            data = [data]
-        elif not isinstance(data, list):
-            raise ValueError("Невалиден лог формат – очаква се списък или речник.")
+    # Build your chart_data
+    event_types = [entry.get("event_type") or entry.get("event") or "unknown" for entry in data]
+    counts = Counter(event_types)
+    total_events = sum(counts.values())
 
-        if not all(isinstance(d, dict) for d in data):
-            raise ValueError("Някои записи не са речници.")
+    ai_suggestions = {}  # e.g. {"login_failure": "…", "malware_detected": "…"}
+    chart_data = {
+        "labels": list(counts.keys()),
+        "values": list(counts.values()),
+        "tooltips": [ai_suggestions.get(k, "Няма препоръка.") for k in counts.keys()]
+    }
 
-        event_types = [entry.get("event_type") or entry.get("event") or "unknown" for entry in data]
-        counts = Counter(event_types)
-
-        ai_suggestions = {
-            "failed_login": "Прегледай акаунта и активирай допълнителна автентикация.",
-            "privilege_escalation": "Изолирай машината и провери за експлойти.",
-            "suspicious": "Направи задълбочен поведенчески анализ.",
-            "unknown": "Извърши ръчна проверка.",
-            "invalid": "Невалиден запис – провери структурата на лога."
-        }
-
-        chart_data = {
-            "labels": list(counts.keys()),
-            "values": [v for v in counts.values()],
-            "tooltips": [ai_suggestions.get(k, "Няма препоръка.") for k in counts.keys()]
-        }
-
-        prompt = f"Анализирай SOC лог:\n{json.dumps(data, indent=2, ensure_ascii=False)}"
-        response = openai_client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "Ти си SOC анализатор."},
-                {"role": "user", "content": prompt}
-            ]
-        )
-        ai_output = response.choices[0].message.content
-
+    # Make sure we have an API key
+    if not api_key:
+        flash("Не е конфигуриран OpenAI API ключ.", "danger")
         return render_template(
             "siem.html",
             log_files=log_files,
             log=json.dumps(data, indent=2, ensure_ascii=False),
-            ai_analysis=ai_output,
+            ai_analysis="",
             chart_data=chart_data,
+            total_events=total_events,
             data=data
         )
+
+    # Call OpenAI
+    try:
+        resp = openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Ти си SOC анализатор."},
+                {"role": "user",   "content": f"Анализирай SOC лог:\n{json.dumps(data, ensure_ascii=False)}"}
+            ]
+        )
     except Exception as e:
-        flash(f"Грешка при анализ: {e}", "danger")
-        return render_template("siem.html", log_files=log_files, log="", ai_analysis="", chart_data=None)
+        logging.exception("OpenAI error")
+        flash(f"Грешка от OpenAI API: {e}", "danger")
+        ai_output = ""
+    else:
+        logging.debug("OpenAI raw response: %r", resp)
+        try:
+            ai_output = resp.choices[0].message.content
+        except Exception as e:
+            logging.exception("Failed to parse OpenAI response")
+            flash("Неочакван формат от OpenAI.", "warning")
+            ai_output = ""
+
+    return render_template(
+        "siem.html",
+        log_files=log_files,
+        log=json.dumps(data, indent=2, ensure_ascii=False),
+        ai_analysis=ai_output,
+        chart_data=chart_data,
+        total_events=total_events,
+        data=data
+    )
 
 
 @siem_bp.route('/upload', methods=['POST'])
