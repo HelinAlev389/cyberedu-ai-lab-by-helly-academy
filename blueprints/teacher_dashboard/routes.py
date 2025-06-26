@@ -5,6 +5,8 @@ import markdown2
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, send_file
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
+
+from services.openai_service import generate_image_url
 from utils.pdf_export import export_to_pdf, sanitize_filename
 
 from extensions import db
@@ -115,6 +117,21 @@ def edit_lesson(lesson_id):
     return render_template('teacher/edit_lesson.html', form=form, lesson=lesson)
 
 
+@teacher_dashboard_bp.route('/lesson/<int:lesson_id>/export_pdf')
+@login_required
+def export_lesson_pdf(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+
+    from utils.pdf_export import export_to_pdf
+    html_content = markdown2.markdown(lesson.content)
+    pdf_buffer = io.BytesIO()
+    export_to_pdf(html_content, "", pdf_buffer)
+    pdf_buffer.seek(0)
+
+    filename = f"{lesson.title.replace(' ', '_')}.pdf"
+    return send_file(pdf_buffer, mimetype='application/pdf', as_attachment=True, download_name=filename)
+
+
 @teacher_dashboard_bp.route('/lesson/<int:lesson_id>/delete', methods=['POST'])
 @login_required
 def delete_lesson(lesson_id):
@@ -127,6 +144,21 @@ def delete_lesson(lesson_id):
     db.session.delete(lesson)
     db.session.commit()
     flash("Урокът беше успешно изтрит.", "success")
+    return redirect(url_for('teacher_dashboard.manage_lessons'))
+
+
+@teacher_dashboard_bp.route('/lesson/<int:lesson_id>/publish', methods=['POST'])
+@login_required
+def publish_lesson(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+
+    if current_user.role not in ['teacher', 'admin']:
+        flash("Нямате права да публикувате уроци.", "danger")
+        return redirect(url_for('main.index'))
+
+    lesson.is_published = True
+    db.session.commit()
+    flash("Урокът е публикуван успешно!", "success")
     return redirect(url_for('teacher_dashboard.manage_lessons'))
 
 
@@ -192,7 +224,7 @@ def export_pdf():
 
 @teacher_dashboard_bp.route('/ai-config', methods=['GET', 'POST'])
 @login_required
-def set_ai_config():
+def set_ai_config(topic=None, difficulty=None, checkpoint=None):
     if current_user.role != 'teacher':
         flash("Само преподаватели имат достъп.", "danger")
         return redirect(url_for('auth.login'))
@@ -217,6 +249,102 @@ def set_ai_config():
         db.session.commit()
 
         flash("Настройките са запазени успешно ✅", "success")
-        return redirect(url_for('teacher_dashboard.set_ai_config'))
+        return redirect(url_for('teacher_dashboard.manage_lessons'))
+
+    notes = request.form.get('notes', '')
+    session.config = {
+        'topic': topic,
+        'difficulty': difficulty,
+        'checkpoint': checkpoint,
+        'notes': notes
+    }
 
     return render_template('teacher/config_ai.html', cfg=session.config or {})
+
+
+@teacher_dashboard_bp.route('/generate_lesson', methods=['GET', 'POST'])
+@login_required
+def generate_lesson():
+    if current_user.role != 'teacher':
+        flash("Само преподаватели имат достъп до тази страница.", "danger")
+        return redirect(url_for('auth.login'))
+
+    session = AISession.query.filter_by(user_id=current_user.id).first()
+    if not session or not session.config:
+        flash("Моля, първо конфигурирайте AI учителя.", "warning")
+        return redirect(url_for('teacher_dashboard.set_ai_config'))
+
+    from services.openai_service import OpenAIService
+    ai = OpenAIService()
+
+    cfg = session.config
+    topic = cfg.get('topic', 'network')
+    difficulty = cfg.get('difficulty', 'beginner')
+    notes = cfg.get('notes', '')
+
+    lesson_prompt = f"""
+    Създай красиво структуриран HTML урок по темата "{topic}" 
+    на ниво {difficulty}. Включи:
+
+    - кратко въведение с икона и заглавие
+    - поне 2 тематични изображения (може да са примерни URL или alt текст)
+    - анимирани секции (използвай CSS класове, напр. "fade-in", "slide-in")
+    - мини куиз с 2 въпроса с възможни отговори (радио бутони)
+    - завършек с обобщение и съвет
+
+    Бележки от преподавателя: {notes if notes else "Няма"}
+    Използвай HTML и класове, които могат лесно да се стилизират.
+    """
+
+    try:
+        generated_lesson = ai.chat(lesson_prompt)
+    except Exception as e:
+        flash(f"Грешка при AI генерация: {e}", "danger")
+        return redirect(url_for('teacher_dashboard.dashboard'))
+
+    # след lesson_prompt
+    image_prompt = f"Създай илюстрация по темата '{topic}' подходяща за урок по {difficulty} ниво"
+
+    try:
+        image_url = generate_image_url(image_prompt)  # ще направим този метод
+    except Exception as e:
+        image_url = None
+
+    from .forms import LessonForm
+    form = LessonForm(data={
+        'title': f"Урок: {topic.capitalize()} ({difficulty})",
+        'topic': topic,
+        'content': generated_lesson
+    })
+
+    if request.method == 'POST' and form.validate_on_submit():
+        is_published = form.submit_publish.data  # True ако натиснат е бутона за публикуване
+
+        lesson = Lesson(
+            title=form.title.data,
+            topic=form.topic.data,
+            content=form.content.data,
+            created_by=current_user.id,
+            is_published=is_published
+        )
+
+        db.session.add(lesson)
+        db.session.commit()
+
+        flash("Урокът е запазен успешно!" + (" (публикуван)" if is_published else " (като чернова)"), "success")
+        return redirect(url_for('teacher_dashboard.manage_lessons'))
+
+    return render_template('teacher/ai_generated_preview.html', form=form)
+
+
+@teacher_dashboard_bp.route('/lesson/<int:lesson_id>/submit_quiz', methods=['POST'])
+@login_required
+def submit_quiz(lesson_id):
+    from models.quiz_result import QuizResult
+
+    score = int(request.form.get('score', 0))
+    result = QuizResult(user_id=current_user.id, lesson_id=lesson_id, score=score)
+    db.session.add(result)
+    db.session.commit()
+
+    return jsonify({'status': 'ok'})

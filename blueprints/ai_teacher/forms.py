@@ -4,15 +4,18 @@ from wtforms.validators import DataRequired, NumberRange
 
 
 class TopicForm(FlaskForm):
-    topic = SelectField(
-        'Избери тема',
-        choices=[
-            ('network', 'Network Security'),
-            ('log', 'Log Analysis'),
-            ('scenario', 'Scenario Training')
-        ],
-        validators=[DataRequired()]
-    )
+    topic = SelectField("Тема", choices=[
+        ('cpp', 'C++'),
+        ('python', 'Python'),
+        ('linux', 'Linux'),
+        ('network', 'Мрежи'),
+        ('web', 'Web сигурност'),
+        ('forensics', 'Компютърна криминалистика'),
+        ('ai', 'Изкуствен интелект'),
+        ('siem', 'SIEM системи'),
+        ('cyberethics', 'Кибер етика')
+    ])
+
     submit = SubmitField('Запази тема')
 
 

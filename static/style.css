@@ -1,77 +1,109 @@
 body {
-    background: linear-gradient(135deg, #1f2330, #2a2e3e);
-    color: #e4e6eb;
-    font-family: 'Segoe UI', sans-serif;
-    min-height: 100vh;
-    margin: 0;
+  background: linear-gradient(135deg, #1f2330, #2a2e3e);
+  color: #e4e6eb;
+  font-family: 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  margin: 0;
 }
 
 .card {
-    background: #2f3246;
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    color: #000;
+  background: #2f3246;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  color: #e4e6eb;
+  transition: all 0.3s ease;
 }
 
 h2 {
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    color: #ffffff;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #ffffff;
 }
 
 .form-control, .form-select {
-    background-color: #1f2330;
-    border: 1px solid #444;
-    color: #fff;
-    border-radius: 10px;
+  background-color: #1f2330;
+  border: 1px solid #444;
+  color: #fff;
+  border-radius: 10px;
 }
 
 .btn-primary {
-    background-color: #ff00aa;
-    border: none;
-    border-radius: 50px;
-    padding: 10px 30px;
-    font-weight: bold;
-    transition: background 0.3s ease;
+  background-color: #ff00aa;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 30px;
+  font-weight: bold;
+  transition: background 0.3s ease;
 }
 
 .btn-primary:hover {
-    background-color: #ff33bb;
+  background-color: #ff33bb;
 }
 
 a {
-    color: #00ccff;
-    text-decoration: none;
+  color: #00ccff;
+  text-decoration: none;
 }
-
 a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 footer {
-    background-color: #2C3C83;
-    color: #ccc;
-    text-align: center;
-    padding: 1rem;
-    margin-top: auto;
+  background-color: #2C3C83;
+  color: #ccc;
+  text-align: center;
+  padding: 1rem;
+  margin-top: auto;
 }
 
 input::placeholder {
-    color: #888;
+  color: #888;
 }
 
 .text-center {
-    text-align: center;
+  text-align: center;
+}
+
+/* ---------------------------- */
+/*           LESSON CARDS      */
+/* ---------------------------- */
+
+.lesson-card-content {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 
+/* Подравняване на бутони */
+.card-body .d-flex {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.card-body .btn {
+  flex: 1 1 auto;
+  min-width: 80px;
+  text-align: center;
+}
+
+/* ---------------------------- */
+/*           SIDEBAR           */
+/* ---------------------------- */
+
 .sidebar {
-  width: 240px;
+  width: 250px;
   background: #2C3C83;
   min-height: 100vh;
   padding-top: 1rem;
+  transition: transform 0.3s ease;
 }
 
 .sidebar a {
@@ -80,70 +112,14 @@ input::placeholder {
   border-radius: 10px;
   display: block;
 }
-
 .sidebar a:hover {
   background-color: #197C85;
   color: #fff;
-  text-decoration: none;
 }
 
-.topbar {
-  background-color: #2a2e3e;
-  color: white;
-}
-
-.topbar input {
-  border-radius: 30px;
-  border: none;
-  padding: 0.5rem 1rem;
-  background: #e4e6eb;
-  color: #1f2330;
-  width: 300px;
-}
-
-.dropdown-menu {
-  background-color: #2a2e3e;
-}
-
-.dropdown-menu .dropdown-item {
-  color: white;
-}
-
-.dropdown-menu .dropdown-item:hover {
-  background-color: #197C85;
-}
-
-.sidebar {
-  width: 240px;
-  background: #2C3C83;
-  min-height: 100vh;
-  transition: transform 0.3s ease;
-}
-
-.sidebar.collapsed {
-  transform: translateX(-100%);
-  position: absolute;
-  z-index: 1000;
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    position: absolute;
-    transform: translateX(-100%);
-    top: 0;
-    left: 0;
-    height: 100vh;
-    z-index: 1000;
-  }
-
-  .sidebar.collapsed {
-    transform: translateX(0);
-  }
-
-  .topbar input {
-    display: none !important;
-  }
-}
+/* ---------------------------- */
+/*           TOPBAR            */
+/* ---------------------------- */
 
 .topbar {
   background-color: #2a2e3e;
@@ -152,7 +128,6 @@ input::placeholder {
   top: 0;
   z-index: 999;
 }
-
 .topbar input {
   border-radius: 30px;
   border: none;
@@ -162,6 +137,51 @@ input::placeholder {
   width: 300px;
 }
 
+/* ---------------------------- */
+/*         DROPDOWN            */
+/* ---------------------------- */
+
+.dropdown-menu {
+  background-color: #2a2e3e;
+}
+.dropdown-menu .dropdown-item {
+  color: white;
+}
+.dropdown-menu .dropdown-item:hover {
+  background-color: #197C85;
+}
+
+/* ---------------------------- */
+/*         RESPONSIVE          */
+/* ---------------------------- */
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .sidebar.collapsed {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 56px;
+    width: 240px;
+    z-index: 1050;
+  }
+
+  .topbar input {
+    display: none !important;
+  }
+
+  .card-body .d-flex {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ---------------------------- */
+/*      DARK / LIGHT THEME     */
+/* ---------------------------- */
 
 body.dark-theme {
   background: linear-gradient(135deg, #1f2330, #2a2e3e);
@@ -177,99 +197,32 @@ body.light-theme {
   background: #f5f7fa;
   color: #222;
 }
-
 .light-theme .sidebar a {
   color: #222;
 }
-
 .light-theme .topbar {
   background-color: #fff;
   color: #222;
 }
-
 .light-theme .topbar input {
   background: #eee;
   color: #000;
 }
-
 .light-theme .dropdown-menu {
   background: #f1f1f1;
   color: #222;
 }
 
-body.dark-theme {
-  --bg-color: #1f2330;
-  --text-color: #e4e6eb;
-  --primary-color: #2C3C83;
-  --accent-color: #197C85;
-}
+/* ---------------------------- */
+/*          QUIZ BOX           */
+/* ---------------------------- */
 
-body.light-theme {
-  --bg-color: #f8f9fa;
-  --text-color: #1c1c1c;
-  --primary-color: #e9ecef;
-  --accent-color: #197C85;
+.quiz-section {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-left: 5px solid #0d6efd;
+  border-radius: 10px;
 }
-
-body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
-.sidebar {
-  width: 250px;
-  min-height: 100vh;
-  background-color: var(--primary-color);
-}
-
-.sidebar .nav-link.active {
-  background-color: var(--accent-color);
-  border-radius: 0.5rem;
-}
-
-.topbar {
-  background-color: var(--primary-color);
-  color: var(--text-color);
-}
-
-.topbar input {
-  background-color: #fff;
-  color: #000;
-}
-
-.sidebar h4 {
-  font-size: 1.5rem;
-  color: #fff;
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.sidebar .nav-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.quiz-section p {
   font-weight: 500;
-  font-size: 1rem;
-  padding: 0.6rem 1rem;
-  transition: background 0.2s;
-}
-
-.sidebar .nav-link i {
-  min-width: 20px;
-  text-align: center;
-}
-
-.sidebar .nav-link:hover {
-  background-color: var(--accent-color);
-  color: #fff;
-}
-
-.sidebar .nav-item + .nav-item {
-  margin-top: 0.25rem;
-}
-
-/* Admin icons specifically */
-.sidebar .nav-item.admin-icon i.fa-tools,
-.sidebar .nav-item.admin-icon i.fa-user-shield {
-  color: #ffdd57;
 }

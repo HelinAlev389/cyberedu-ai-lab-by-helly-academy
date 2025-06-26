@@ -34,4 +34,23 @@
     {% endif %}
   </form>
 </div>
+
+<script>
+function submitScore(score, lessonId) {
+  fetch(`/lesson/${lessonId}/submit_quiz`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: `score=${score}`
+  })
+  .then(response => {
+    if (response.ok) {
+      alert("🎉 Резултатът е записан!");
+    } else {
+      alert("⚠️ Грешка при запис на резултат.");
+    }
+  })
+  .catch(() => alert("⚠️ Невъзможна връзка със сървъра."));
+}
+</script>
+
 {% endblock %}

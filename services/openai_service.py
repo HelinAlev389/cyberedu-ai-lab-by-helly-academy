@@ -4,6 +4,15 @@ import json
 from openai import OpenAI
 
 
+def generate_image_url(prompt):
+    response = openai.Image.create(
+        prompt=prompt,
+        n=1,
+        size="1024x512"
+    )
+    return response['data'][0]['url']
+
+
 class OpenAIService:
     def __init__(self):
         self.client = OpenAI()

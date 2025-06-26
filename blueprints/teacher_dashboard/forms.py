@@ -1,14 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SelectField, SubmitField
+from wtforms import StringField, TextAreaField, SubmitField
 from wtforms.validators import DataRequired
 
 
 class LessonForm(FlaskForm):
-    title = StringField("Заглавие на урока", validators=[DataRequired()])
-    topic = SelectField("Тема", choices=[
-        ('network', 'Мрежова сигурност'),
-        ('log', 'Анализ на логове'),
-        ('scenario', 'Сценарий')
-    ])
-    content = TextAreaField("Съдържание (Markdown или HTML)", validators=[DataRequired()])
-    submit = SubmitField("Създай урок")
+    title = StringField('Заглавие', validators=[DataRequired()])
+    topic = StringField('Тема', validators=[DataRequired()])
+    content = TextAreaField('Съдържание', validators=[DataRequired()])
+
+    submit_draft = SubmitField('💾 Запази като чернова')
+    submit_publish = SubmitField('📢 Публикувай')

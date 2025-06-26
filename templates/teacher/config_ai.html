@@ -4,32 +4,49 @@
 {% block content %}
 <div class="container mt-5">
   <div class="card shadow p-4">
-    <h3 class="mb-4 text-primary">⚙️ AI Настройки за урок</h3>
+    <h3 class="mb-4 text-primary text-center">⚙️ AI Настройки за урок</h3>
 
     <form method="POST" action="{{ url_for('teacher_dashboard.set_ai_config') }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-      <div class="mb-3">
-        <label for="topic" class="form-label">Тема</label>
-        <input type="text" name="topic" id="topic" class="form-control" value="{{ cfg.topic or '' }}" required>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="topic" class="form-label">📚 Тема</label>
+          <select class="form-select" name="topic" id="topic" required>
+            <option value="network" {% if cfg.topic == 'network' %}selected{% endif %}>Мрежи</option>
+            <option value="cybersecurity" {% if cfg.topic == 'cybersecurity' %}selected{% endif %}>Киберсигурност</option>
+            <option value="linux" {% if cfg.topic == 'linux' %}selected{% endif %}>Linux</option>
+            <option value="cpp" {% if cfg.topic == 'cpp' %}selected{% endif %}>C++</option>
+            <option value="web" {% if cfg.topic == 'web' %}selected{% endif %}>Уеб технологии</option>
+            <option value="cryptography" {% if cfg.topic == 'cryptography' %}selected{% endif %}>Криптография</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label for="difficulty" class="form-label">🎯 Ниво</label>
+          <select name="difficulty" id="difficulty" class="form-select" required>
+            <option value="beginner" {% if cfg.difficulty == 'beginner' %}selected{% endif %}>Начално</option>
+            <option value="intermediate" {% if cfg.difficulty == 'intermediate' %}selected{% endif %}>Средно</option>
+            <option value="advanced" {% if cfg.difficulty == 'advanced' %}selected{% endif %}>Напреднало</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label for="checkpoint" class="form-label">📈 Минимална оценка за преминаване</label>
+          <input type="number" name="checkpoint" id="checkpoint" min="0" max="100" required
+            class="form-control" value="{{ cfg.checkpoint or 50 }}">
+        </div>
+
+        <div class="col-md-12">
+          <label for="notes" class="form-label">📝 Бележки за AI</label>
+          <textarea name="notes" id="notes" class="form-control" rows="4"
+            placeholder="Опиши изисквания или контекст...">{{ cfg.notes if cfg.notes else '' }}</textarea>
+        </div>
       </div>
 
-      <div class="mb-3">
-        <label for="difficulty" class="form-label">Ниво</label>
-        <select name="difficulty" id="difficulty" class="form-select">
-          <option value="beginner" {% if cfg.difficulty == 'beginner' %}selected{% endif %}>Начално</option>
-          <option value="intermediate" {% if cfg.difficulty == 'intermediate' %}selected{% endif %}>Средно</option>
-          <option value="advanced" {% if cfg.difficulty == 'advanced' %}selected{% endif %}>Напреднало</option>
-
-        </select>
+      <div class="mt-4 d-flex justify-content-center">
+        <button type="submit" class="btn btn-success px-4">💾 Запази конфигурацията</button>
       </div>
-
-      <div class="mb-3">
-        <label for="checkpoint" class="form-label">Минимална оценка за преминаване</label>
-        <input type="number" name="checkpoint" id="checkpoint" min="0" max="100" class="form-control" value="{{ cfg.checkpoint or 50 }}">
-      </div>
-
-      <button type="submit" class="btn btn-success">💾 Запази</button>
     </form>
   </div>
 </div>

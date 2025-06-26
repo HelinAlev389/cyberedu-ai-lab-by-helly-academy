@@ -10,11 +10,13 @@ from extensions import db
 from models.ai_memory import AIMemory
 from models.lesson import Lesson
 from models.lesson_progress import LessonProgress
+from models.quiz_result import QuizResult
 from models.student_note import StudentNote
 from utils.pdf_export import export_to_pdf, sanitize_filename
 
 student_dashboard_bp = Blueprint('student_dashboard', __name__, url_prefix='/student')
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 # 💬 AI подобрение на бележки
 def ai_improve_notes(prompt_html):
@@ -24,12 +26,14 @@ def ai_improve_notes(prompt_html):
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[
-            {"role": "system", "content": "Подобри следните студентски бележки като ги направиш по-ясни и структурирани."},
+            {"role": "system",
+             "content": "Подобри следните студентски бележки като ги направиш по-ясни и структурирани."},
             {"role": "user", "content": plain_text}
         ],
         temperature=0.7
     )
     return response.choices[0].message.content
+
 
 # 🎓 Дашборд
 @student_dashboard_bp.route('/dashboard')
@@ -56,6 +60,7 @@ def dashboard():
                            lessons=lessons,
                            progress=progress_dict)
 
+
 # 👁️ Преглед на урок
 @student_dashboard_bp.route('/lesson/<int:lesson_id>', methods=['GET', 'POST'])
 @login_required
@@ -64,7 +69,8 @@ def view_lesson(lesson_id):
 
     progress = LessonProgress.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
     if not progress:
-        progress = LessonProgress(user_id=current_user.id, lesson_id=lesson.id, progress=100, completed_at=datetime.utcnow())
+        progress = LessonProgress(user_id=current_user.id, lesson_id=lesson.id, progress=100,
+                                  completed_at=datetime.utcnow())
         db.session.add(progress)
         db.session.commit()
 
@@ -97,6 +103,7 @@ def view_lesson(lesson_id):
 
     return render_template('student/lesson_view.html', lesson=lesson, note=note, improved=improved)
 
+
 # ✅ Завършени уроци
 @student_dashboard_bp.route('/completed')
 @login_required
@@ -109,6 +116,7 @@ def completed_lessons():
     lessons = [p.lesson for p in progresses]
 
     return render_template('student/completed_lessons.html', lessons=lessons)
+
 
 # 🧠 Моите бележки
 @student_dashboard_bp.route('/notes', methods=['GET', 'POST'])
@@ -159,6 +167,7 @@ def all_notes():
                            improved_note=improved_note,
                            active_note=active_note)
 
+
 # 📄 Експортиране в PDF
 @student_dashboard_bp.route('/export_pdf')
 @login_required
@@ -183,9 +192,35 @@ def export_pdf():
     filename = f"{sanitize_filename(current_user.username)}_history.pdf"
     return send_file(buffer, mimetype="application/pdf", download_name=filename, as_attachment=True)
 
+
 @student_dashboard_bp.route('/search')
 @login_required
 def search():
     query = request.args.get('q')
     # Тук можеш да филтрираш уроки, бележки и т.н.
     return render_template("student/search_results.html", query=query)
+
+
+@student_dashboard_bp.route('/lessons')
+@login_required
+def student_lessons():
+    lessons = Lesson.query.order_by(Lesson.created_at.desc()).all()
+    return render_template('student/lesson_list.html', lessons=lessons)
+
+
+@student_dashboard_bp.route('/lessons')
+@login_required
+def lesson_list():
+    lessons = Lesson.query.filter_by(is_published=True).order_by(Lesson.created_at.desc()).all()
+    return render_template('student/lesson_list.html', lessons=lessons)
+
+
+@student_dashboard_bp.route('/lesson/<int:lesson_id>/submit_quiz', methods=['POST'])
+@login_required
+def submit_quiz(lesson_id):
+    score = request.form.get('score', type=int)
+    result = QuizResult(user_id=current_user.id, lesson_id=lesson_id, score=score)
+    db.session.add(result)
+    db.session.commit()
+    flash("Резултатът от куиза е записан успешно!", "success")
+    return redirect(url_for('student_dashboard.view_lesson', lesson_id=lesson_id))

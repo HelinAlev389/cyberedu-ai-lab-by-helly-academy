@@ -25,10 +25,10 @@ def login():
             db.session.add(log)
             db.session.commit()
 
-            if user.role == 'admin':
-                return redirect(url_for('admin_dashboard.dashboard'))
-            elif user.role == 'teacher':
-                return redirect(url_for('teacher_dashboard.test_dashboard'))
+            if user.role == 'teacher':
+                return redirect(url_for('teacher_dashboard.dashboard'))
+            elif user.role == 'student':
+                return redirect(url_for('ai_teacher.dashboard'))  # или student_dashboard
             else:
                 return redirect(url_for('main.index'))
 
@@ -43,9 +43,11 @@ def register():
     # Тук логика за регистрация
     return render_template('register.html')
 
+
 @auth_bp.route('/forgot_password')
 def forgot_password():
     return render_template('forgot_password.html')
+
 
 @auth_bp.route('/logout')
 @login_required

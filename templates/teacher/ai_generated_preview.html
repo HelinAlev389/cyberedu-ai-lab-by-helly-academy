@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Преглед на AI урок{% endblock %}
+
+{% block content %}
+<h2 class="mb-4 text-center">🤖 Преглед на AI-генериран урок</h2>
+
+<form method="POST" class="container">
+  {{ form.hidden_tag() }}
+
+  <div class="mb-3">
+    {{ form.title.label(class="form-label") }}
+    {{ form.title(class="form-control") }}
+  </div>
+
+  <div class="mb-3">
+    {{ form.topic.label(class="form-label") }}
+    {{ form.topic(class="form-control") }}
+  </div>
+
+  <div class="mb-3">
+    {{ form.content.label(class="form-label") }}
+    {{ form.content(class="form-control", rows=20) }}
+  </div>
+
+  <div class="form-actions mt-3 d-flex flex-wrap gap-2">
+    {{ form.submit_draft(class="btn btn-secondary") }}
+    {{ form.submit_publish(class="btn btn-success") }}
+  </div>
+</form>
+{% endblock %}
