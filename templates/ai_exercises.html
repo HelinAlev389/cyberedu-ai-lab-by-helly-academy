@@ -1,20 +1,83 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
-  <h2>Персонализирани упражнения</h2>
 
-  {% if exercises %}
-    <div class="mt-4">
-      <pre style="white-space: pre-wrap; background:#f8f9fa; padding:1rem; border-radius:4px;">
-{{ exercises }}
-      </pre>
-    </div>
-  {% else %}
-    <div class="alert alert-info mt-3">
-      Няма налични упражнения към момента.
-    </div>
-  {% endif %}
+<div class="max-w-4xl mx-auto px-6 py-8 space-y-8">
+  <h1 class="text-3xl font-bold text-gray-800">📊 Оценка на упражненията</h1>
 
-  <a href="{{ url_for('ai_teacher.dashboard') }}" class="btn btn-secondary mt-3">
-    ← Обратно към Dashboard
-  </a>
+  <div class="bg-white rounded-2xl shadow-lg p-6 space-y-6">
+    {% if results %}
+      <p class="text-lg font-medium text-gray-700">📈 Среден резултат:
+        <span class="text-indigo-600 font-bold">{{ average }}%</span>
+      </p>
+
+      <div class="space-y-4">
+        {% for res in results %}
+          <div class="p-4 rounded-xl border border-gray-200 bg-gray-50">
+            <h3 class="text-md font-semibold text-gray-800">
+              Въпрос {{ res.id|upper }}
+            </h3>
+            <p class="mt-1 text-sm text-gray-700">
+              ✅ Оценка: <span class="font-medium text-green-700">{{ res.score }}%</span>
+            </p>
+            <p class="mt-1 text-sm text-gray-600 italic">💬 Обратна връзка: {{ res.feedback }}</p>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="mt-6">
+        {% if average >= 80 %}
+          <div class="bg-green-100 border-l-4 border-green-500 text-green-800 p-4 rounded">
+            Чудесна работа! Можеш да преминеш към следващата тема. ✅
+          </div>
+        {% elif average >= 50 %}
+          <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded">
+            Среден резултат – препоръчва се преглед на ключови понятия. ⚠️
+          </div>
+        {% else %}
+          <div class="bg-red-100 border-l-4 border-red-500 text-red-800 p-4 rounded">
+            Нисък резултат – върни се и повтори урока. ❗
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="mt-8 text-right">
+        <a href="{{ url_for('ai_teacher.lesson') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded">
+          🔁 Повтори урока
+        </a>
+      </div>
+    {% else %}
+      <p class="text-red-600 font-medium">Няма резултати за показване.</p>
+    {% endif %}
+    {% if exercises %}
+<div class="bg-white p-6 rounded-xl shadow mt-10">
+  <h2 class="text-xl font-bold text-gray-800 mb-4">🔍 Стъпково упражнение</h2>
+  <div id="step-container" class="space-y-6">
+    {% for step in exercises.split('\n\n') %}
+      <div class="step hidden p-4 border-l-4 border-indigo-500 bg-gray-50 rounded-lg shadow">
+        <p class="text-gray-800 text-md font-medium">{{ step.strip() }}</p>
+        <textarea rows="3" class="w-full mt-3 p-2 border rounded focus:ring-indigo-500" placeholder="Вашият отговор..."></textarea>
+        <button class="next-step mt-3 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">Следваща стъпка</button>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+  const steps = document.querySelectorAll('.step');
+  const buttons = document.querySelectorAll('.next-step');
+
+  if (steps.length) steps[0].classList.remove('hidden');
+
+  buttons.forEach((btn, idx) => {
+    btn.addEventListener('click', () => {
+      btn.disabled = true;
+      if (steps[idx + 1]) steps[idx + 1].classList.remove('hidden');
+    });
+  });
+</script>
+{% endif %}
+
+  </div>
+</div>
+
 {% endblock %}

@@ -16,6 +16,8 @@
   {% endif %}
 
   <form method="POST" class="mt-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
     <div class="mb-3">
       <label for="answer" class="form-label">Твоят отговор / действие:</label>
       <textarea name="answer" id="answer" class="form-control" rows="3" required></textarea>

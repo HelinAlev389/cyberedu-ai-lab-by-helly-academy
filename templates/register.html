@@ -24,6 +24,8 @@
       <h3>Създай акаунт</h3>
 
       <form method="POST" action="{{ url_for('auth.register') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
         {{ form.hidden_tag() }}
 
         <div class="input-group mb-3">

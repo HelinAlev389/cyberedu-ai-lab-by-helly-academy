@@ -16,7 +16,7 @@
 
     <div class="tagline">
       <h2>AI-POWERED.<br>HACKER-PROOF.<br>ALWAYS ON.</h2>
-      <a href="{{ url_for('auth.register') }}" class="btn btn-link signup-link">SIGN UP</a>
+      {#<a href="{{ url_for('auth.register') }}" class="btn btn-link signup-link">SIGN UP</a>#}
     </div>
   </div>
 
@@ -26,6 +26,8 @@
     <div class="login-form-box">
       <h3>LOG IN TO SECURE NODE</h3>
       <form method="POST" action="{{ url_for('auth.login') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
         {{ form.hidden_tag() }}
 
         <div class="input-group mb-3">

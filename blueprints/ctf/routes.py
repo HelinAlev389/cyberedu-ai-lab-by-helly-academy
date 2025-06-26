@@ -17,6 +17,12 @@ def overview():
     return render_template('ctf_overview.html', missions=MISSIONS)
 
 
+@ctf_bp.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template("ctf/dashboard.html")
+
+
 @ctf_bp.route('/<mission_id>/tier/<tier>', methods=['GET', 'POST'])
 @login_required
 def ctf_mission(mission_id, tier, answers=None):
@@ -69,7 +75,7 @@ def ctf_mission(mission_id, tier, answers=None):
         db.session.commit()
 
         flash(f"CTF приключена! Точки: {points} | Генериран PDF: {filename}", "success")
-        return redirect(url_for('ctf_result'))
+        return redirect(url_for('ctf.result'))
 
     log_data = None
     if "log_file" in mission:

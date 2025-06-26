@@ -14,6 +14,8 @@
               {% if active_note and active_note.id == note.id %}
                 <!-- ✏️ Edit Mode -->
                 <form method="POST" onsubmit="syncEditor({{ note.id }})">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                   <input type="hidden" name="note_id" value="{{ note.id }}">
                   <input type="hidden" name="content" id="hidden-content-{{ note.id }}">
 
@@ -30,6 +32,8 @@
               {% elif improved_note and active_note.id == note.id %}
                 <!-- ✨ AI Improved Mode -->
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                   <input type="hidden" name="note_id" value="{{ note.id }}">
                   <label class="form-label">✨ AI подобрена версия:</label>
                   <textarea name="improved_content" class="form-control" rows="6">{{ improved_note }}</textarea>
@@ -46,11 +50,15 @@
                 </div>
                 <div class="d-flex justify-content-between mt-2">
                   <form method="POST" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                     <input type="hidden" name="note_id" value="{{ note.id }}">
                     <button type="submit" name="action" value="edit" class="btn btn-sm btn-primary">✏️ Редактирай</button>
                     <button type="submit" name="action" value="improve" class="btn btn-sm btn-warning">✨ AI Подобри</button>
                   </form>
                   <form method="POST" class="d-inline" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете бележката?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                     <input type="hidden" name="note_id" value="{{ note.id }}">
                     <button type="submit" name="action" value="delete" class="btn btn-sm btn-danger">🗑️ Изтрий</button>
                   </form>

@@ -182,3 +182,10 @@ def export_pdf():
 
     filename = f"{sanitize_filename(current_user.username)}_history.pdf"
     return send_file(buffer, mimetype="application/pdf", download_name=filename, as_attachment=True)
+
+@student_dashboard_bp.route('/search')
+@login_required
+def search():
+    query = request.args.get('q')
+    # Тук можеш да филтрираш уроки, бележки и т.н.
+    return render_template("student/search_results.html", query=query)

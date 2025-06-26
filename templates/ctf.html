@@ -24,16 +24,17 @@
 
 
 
-  <form method="post">
-    {% for q in tier_data["questions"] %}
-      <div class="mb-3">
-        <label class="form-label">{{ q }}</label>
-        <textarea class="form-control" name="answer{{ loop.index }}" rows="3" required></textarea>
-      </div>
-    {% endfor %}
-    <button type="submit" class="btn btn-primary">Изпрати</button>
-  </form>
-</div>
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  {% for q in tier_data["questions"] %}
+    <div class="mb-3">
+      <label class="form-label">{{ q }}</label>
+      <textarea class="form-control" name="answer{{ loop.index }}" rows="3" required></textarea>
+    </div>
+  {% endfor %}
+  <button type="submit" class="btn btn-primary">Изпрати</button>
+</form>
 
 
 {% endif %}

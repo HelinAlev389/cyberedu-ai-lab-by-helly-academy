@@ -3,6 +3,8 @@
 <div class="container mt-4">
   <h2>✏️ Редактирай урок</h2>
   <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
     {{ form.hidden_tag() }}
     <div class="mb-3">
       {{ form.title.label(class="form-label") }}

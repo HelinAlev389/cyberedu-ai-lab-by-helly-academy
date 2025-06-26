@@ -12,6 +12,8 @@
 
 <h2 class="mt-4">📚 Създай нов урок</h2>
 <form method="POST" class="mt-3">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
   {{ form.hidden_tag() }}
   <div class="mb-3">
     {{ form.title.label(class="form-label") }}
@@ -49,6 +51,8 @@
               <a href="{{ url_for('teacher_dashboard.view_lesson', lesson_id=lesson.id) }}" class="btn btn-sm btn-outline-primary">👁️</a>
               <a href="{{ url_for('teacher_dashboard.edit_lesson', lesson_id=lesson.id) }}" class="btn btn-sm btn-outline-warning">✏️</a>
               <form method="POST" action="{{ url_for('teacher_dashboard.delete_lesson', lesson_id=lesson.id) }}" style="display:inline;" onsubmit="return confirm('Наистина ли искаш да изтриеш този урок?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                 <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
               </form>
             </div>

@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 from utils.pdf_export import export_to_pdf, sanitize_filename
 
 from extensions import db
-from models import User
+from models import User, AISession
 from models.ai_memory import AIMemory
 from models.lesson import Lesson
 from .forms import LessonForm
@@ -133,40 +133,21 @@ def delete_lesson(lesson_id):
 @teacher_dashboard_bp.route('/dashboard')
 @login_required
 def dashboard():
-    if current_user.role not in ['teacher', 'admin']:
-        flash("Нямате достъп до тази секция.", "danger")
-        return redirect(url_for('main.index'))
+    if current_user.role != 'teacher':
+        flash("Нямате достъп до тази страница.", "danger")
+        return redirect(url_for('auth.login'))
 
-    lesson_count = Lesson.query.count()
-    student_count = User.query.filter_by(role='student').count()
-    memory_count = AIMemory.query.count()
+    return render_template('teacher/dashboard_simple.html', user=current_user)
 
-    # 🔽 Вземи всички студенти за dropdown
-    students = User.query.filter_by(role='student').all()
 
-    # 🔎 Провери дали има избран student_id от GET параметри
-    selected_student_id = request.args.get('student_id', type=int)
-
-    # 📥 Вземи AI интеракции (филтрирани, ако е избран студент)
-    query = AIMemory.query.join(User).order_by(AIMemory.created_at.desc())
-
-    if selected_student_id:
-        query = query.filter(AIMemory.user_id == selected_student_id)
-
-    memories = query.limit(100).all()  # Може да направиш pagination по-късно
-
-    # 📌 Препоръки
-    from services.recommendation_service import recommend_lessons_for
-    recommended = recommend_lessons_for(current_user.id)
-
-    return render_template('teacher/dashboard.html',
-                           lesson_count=lesson_count,
-                           student_count=student_count,
-                           memory_count=memory_count,
-                           recommended=recommended,
-                           students=students,
-                           memories=memories,
-                           selected_student_id=selected_student_id)
+@teacher_dashboard_bp.route('/test_dashboard')
+@login_required
+def test_dashboard():
+    return f"""
+    <h2>Добре дошъл, {current_user.username}!</h2>
+    <p>Роля: <strong>{current_user.role}</strong></p>
+    <p>Статус: {'Логнат си' if current_user.is_authenticated else 'Не си логнат'}</p>
+    """
 
 
 @teacher_dashboard_bp.route('/dashboard/export_pdf')
@@ -207,3 +188,35 @@ def export_pdf():
         as_attachment=True,
         download_name=f"{filename_base}_ai_report.pdf"
     )
+
+
+@teacher_dashboard_bp.route('/ai-config', methods=['GET', 'POST'])
+@login_required
+def set_ai_config():
+    if current_user.role != 'teacher':
+        flash("Само преподаватели имат достъп.", "danger")
+        return redirect(url_for('auth.login'))
+
+    # Търсим или създаваме сесия
+    session = AISession.query.filter_by(user_id=current_user.id).first()
+    if not session:
+        session = AISession(user_id=current_user.id, config={})
+        db.session.add(session)
+        db.session.commit()
+
+    if request.method == 'POST':
+        topic = request.form.get('topic', 'network')
+        difficulty = request.form.get('difficulty', 'beginner')
+        checkpoint = int(request.form.get('checkpoint', 50))
+
+        session.config = {
+            'topic': topic,
+            'difficulty': difficulty,
+            'checkpoint': checkpoint
+        }
+        db.session.commit()
+
+        flash("Настройките са запазени успешно ✅", "success")
+        return redirect(url_for('teacher_dashboard.set_ai_config'))
+
+    return render_template('teacher/config_ai.html', cfg=session.config or {})

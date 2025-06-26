@@ -18,3 +18,7 @@ class User(db.Model, UserMixin):
 
     def check_password(self, raw):
         return check_password_hash(self.password, raw)
+
+
+def role():
+    return None

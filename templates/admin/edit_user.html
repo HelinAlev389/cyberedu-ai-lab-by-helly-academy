@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Редактирай потребител{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Редакция на потребител</h2>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+      {{ form.username.label(class="form-label") }}
+      {{ form.username(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.email.label(class="form-label") }}
+      {{ form.email(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.first_name.label(class="form-label") }}
+      {{ form.first_name(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.last_name.label(class="form-label") }}
+      {{ form.last_name(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.role.label(class="form-label") }}
+      {{ form.role(class="form-select") }}
+    </div>
+    <button class="btn btn-warning" type="submit">Запази</button>
+    <a href="{{ url_for('admin_dashboard.dashboard') }}" class="btn btn-secondary">Назад</a>
+  </form>
+</div>
+{% endblock %}

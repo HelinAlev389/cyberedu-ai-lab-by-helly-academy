@@ -18,6 +18,11 @@
     </div>
   </div>
   <div id="ai-feedback" class="mt-4"></div>
+
+<script>
+  window.walkthroughSteps = {{ scenario["steps"]|tojson|safe }};
+</script>
+
 {% endif %}
 
 <script>
@@ -96,7 +101,26 @@
 
   // 🔹 Стартирай
   showStep(currentStep);
+
+
 </script>
+<script>
+fetch("/ai-walkthrough-feedback", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    walkthrough_id: "wt-002",
+    rating: 5,
+    comment: "AI беше супер полезен!"
+  })
+})
+.then(res => res.json())
+.then(data => console.log("✅ Отговор:", data))
+.catch(err => console.error("❌ Грешка:", err));
+</script>
+
 
 
 {% endblock %}

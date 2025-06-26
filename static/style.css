@@ -237,3 +237,39 @@ body {
   color: #000;
 }
 
+.sidebar h4 {
+  font-size: 1.5rem;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 0.6rem 1rem;
+  transition: background 0.2s;
+}
+
+.sidebar .nav-link i {
+  min-width: 20px;
+  text-align: center;
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--accent-color);
+  color: #fff;
+}
+
+.sidebar .nav-item + .nav-item {
+  margin-top: 0.25rem;
+}
+
+/* Admin icons specifically */
+.sidebar .nav-item.admin-icon i.fa-tools,
+.sidebar .nav-item.admin-icon i.fa-user-shield {
+  color: #ffdd57;
+}

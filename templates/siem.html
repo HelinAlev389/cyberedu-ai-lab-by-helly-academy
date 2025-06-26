@@ -4,6 +4,8 @@
 
   {% if log_files %}
     <form method="POST" action="{{ url_for('siem.siem_analyze') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
       <label for="logfile_select">Избери лог файл:</label>
       <select name="logfile" id="logfile_select" class="form-select mb-3">
         {% for file in log_files %}
@@ -19,6 +21,8 @@
   {% endif %}
 
   <form action="{{ url_for('siem.upload_log') }}" method="POST" enctype="multipart/form-data" class="mt-5">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
     <div class="mb-3">
       <label for="log_upload_file" class="form-label">Качи лог файл (.json):</label>
       <input class="form-control" type="file" id="log_upload_file" name="logfile" accept=".json" required>
@@ -27,6 +31,8 @@
   </form>
 
   <form action="{{ url_for('siem.clear_uploaded_logs') }}" method="POST" class="mt-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
     <button type="submit" class="btn btn-outline-danger">🗑 Изчисти всички лог файлове</button>
   </form>
 
@@ -38,11 +44,11 @@
       <div class="card p-4 my-4 bg-light shadow-sm border-start border-success border-4">
         <h4 class="mb-3">📌 Обобщение на инцидента</h4>
         <ul>
-          <li><strong>Дата и час:</strong> {{ data[0].timestamp if data[0].timestamp else 'няма дата' }}</li>
-          <li><strong>Тип на събитието:</strong> {{ data[0].event_type or data[0].event }}</li>
-          <li><strong>Потребител:</strong> {{ data[0].user }}</li>
-          <li><strong>Действие:</strong> {{ data[0].action }}</li>
-          <li><strong>Локация:</strong> {{ data[0].location }}</li>
+          <li><strong>Дата и час:</strong> {{ data[0].get("timestamp", "няма дата") }}</li>
+          <li><strong>Тип на събитието:</strong> {{ data[0].get("event_type") or data[0].get("event", "неизвестно") }}</li>
+          <li><strong>Потребител:</strong> {{ data[0].get("user", "неизвестен") }}</li>
+          <li><strong>Действие:</strong> {{ data[0].get("action", "неизвестно") }}</li>
+          <li><strong>Локация:</strong> {{ data[0].get("location", "неизвестно") }}</li>
         </ul>
 
         <h5 class="mt-4">🧠 Анализ</h5>
@@ -54,41 +60,35 @@
         <ul>
           <li>Провери дали действието е одобрено от администратор.</li>
           <li>Изолирай машината временно и провери логове от преди/след това.</li>
-          <li>Прегледай действията на потребителя "{{ data[0].user }}".</li>
+          <li>Прегледай действията на потребителя "{{ data[0].get("user", "неизвестен") }}".</li>
         </ul>
       </div>
 
       <h3>Графика:</h3>
       <canvas id="logChart" width="400" height="200"></canvas>
       <script>
-// grab your data as a JS object
-const chartData = {{ chart_data | tojson | safe }};
-
-// initialize Chart.js
-const ctx = document.getElementById('logChart').getContext('2d');
-new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: chartData.labels,
-    datasets: [{
-      label: 'Брой събития',
-      data: chartData.values,
-      // Chart.js will pick default colors if you omit backgroundColor
-    }]
-  },
-  options: {
-    plugins: {
-      tooltip: {
-        callbacks: {
-          // show your custom tooltips from the filter
-          label: (ctx) => chartData.tooltips[ctx.dataIndex]
-        }
-      }
-    }
-  }
-});
-</script>
-
+        const chartData = {{ chart_data | tojson | safe }};
+        const ctx = document.getElementById('logChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: chartData.labels,
+            datasets: [{
+              label: 'Брой събития',
+              data: chartData.values,
+            }]
+          },
+          options: {
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => chartData.tooltips[ctx.dataIndex]
+                }
+              }
+            }
+          }
+        });
+      </script>
 
       <div class="alert alert-info mt-4">
         ℹ️ Общо събития: <strong>{{ chart_data.values | sum }}</strong><br>
@@ -96,6 +96,8 @@ new Chart(ctx, {
       </div>
 
       <form method="POST" action="{{ url_for('siem.export_pdf') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
         <textarea name="log_data" style="display:none;">{{ log }}</textarea>
         <textarea name="ai_output" style="display:none;">{{ ai_analysis }}</textarea>
         <button class="btn btn-outline-primary mt-3" type="submit">📄 Експортирай като PDF</button>

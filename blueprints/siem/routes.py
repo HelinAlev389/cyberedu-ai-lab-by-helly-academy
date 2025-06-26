@@ -1,14 +1,17 @@
+import os
+import json
+import datetime
+
 from flask import Blueprint, render_template, request, flash, redirect, url_for, send_file
 from flask_login import login_required
 from collections import Counter
 from openai import OpenAI
-from wtforms.fields import datetime
 
 from utils.pdf_export import export_to_pdf, sanitize_filename
-import os, json
 
 siem_bp = Blueprint('siem', __name__, url_prefix='/siem')
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 @siem_bp.route('/', methods=['GET'])
 @login_required
@@ -17,21 +20,25 @@ def dashboard():
     log_files = [f for f in os.listdir(logs_path) if f.endswith(".json")] if os.path.exists(logs_path) else []
     return render_template("siem.html", log_files=log_files, chart_data=None)
 
+
 @siem_bp.route('/analyze', methods=['POST'])
 @login_required
 def siem_analyze():
     logs_path = os.path.join("instance", "logs")
-    log_files = [f for f in os.listdir(logs_path) if f.endswith(".json")] if os.path.exists(logs_path) else []
     logfile = request.form.get("logfile")
     filepath = os.path.join(logs_path, logfile)
+
+    log_files = [f for f in os.listdir(logs_path) if f.endswith(".json")]
 
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             data = json.load(f)
+
         if isinstance(data, dict):
             data = [data]
         elif not isinstance(data, list):
             raise ValueError("Невалиден лог формат – очаква се списък или речник.")
+
         if not all(isinstance(d, dict) for d in data):
             raise ValueError("Някои записи не са речници.")
 
@@ -48,8 +55,8 @@ def siem_analyze():
 
         chart_data = {
             "labels": list(counts.keys()),
-            "values": [int(v) for v in counts.values()],
-            "tooltips": [ai_suggestions.get(k, "Няма препоръка.") for k in counts]
+            "values": [v for v in counts.values()],
+            "tooltips": [ai_suggestions.get(k, "Няма препоръка.") for k in counts.keys()]
         }
 
         prompt = f"Анализирай SOC лог:\n{json.dumps(data, indent=2, ensure_ascii=False)}"
@@ -72,13 +79,8 @@ def siem_analyze():
         )
     except Exception as e:
         flash(f"Грешка при анализ: {e}", "danger")
-        return render_template(
-            "siem.html",
-            log_files=log_files,
-            log="",
-            ai_analysis="",
-            chart_data=None
-        )
+        return render_template("siem.html", log_files=log_files, log="", ai_analysis="", chart_data=None)
+
 
 @siem_bp.route('/upload', methods=['POST'])
 @login_required
@@ -87,6 +89,7 @@ def upload_log():
     if not file:
         flash("Не е избран файл.", "danger")
         return redirect(url_for("siem.dashboard"))
+
     if not file.filename.endswith(".json"):
         flash("Само .json файлове са позволени.", "warning")
         return redirect(url_for("siem.dashboard"))
@@ -99,6 +102,7 @@ def upload_log():
 
     flash("Файлът е качен успешно!", "success")
     return redirect(url_for("siem.dashboard"))
+
 
 @siem_bp.route('/clear', methods=['POST'])
 @login_required
@@ -117,18 +121,20 @@ def clear_uploaded_logs():
     flash(msg, "success" if deleted else "info")
     return redirect(url_for("siem.dashboard"))
 
+
 @siem_bp.route('/export-pdf', methods=['GET', 'POST'])
 @login_required
 def export_pdf():
-    # Redirect GET requests back to dashboard to avoid Method Not Allowed
     if request.method == 'GET':
         return redirect(url_for('siem.dashboard'))
 
     log_json = request.form.get("log_data")
     ai_output = request.form.get("ai_output")
+
     if not log_json or not ai_output:
         flash("Грешка: липсват данни за PDF.", "danger")
         return redirect(url_for("siem.dashboard"))
+
     try:
         log_data = json.loads(log_json)
         entry = log_data[0] if isinstance(log_data, list) and log_data else {}
@@ -139,8 +145,10 @@ def export_pdf():
         report_dir = os.path.join("results")
         os.makedirs(report_dir, exist_ok=True)
         out_file = os.path.join(report_dir, f"soc_report_{event_type}_{user}_{ts}.pdf")
+
         export_to_pdf(json.dumps(log_data, indent=2, ensure_ascii=False), ai_output, out_file)
         return send_file(out_file, as_attachment=True)
+
     except Exception as e:
         flash(f"Грешка при генериране на PDF: {e}", "danger")
         return redirect(url_for("siem.dashboard"))

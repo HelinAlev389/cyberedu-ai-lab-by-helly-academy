@@ -11,6 +11,8 @@
       method="POST"
       enctype="multipart/form-data"
       class="mb-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
   <input type="file" name="logfile" accept=".json" required>
   <button type="submit" class="btn btn-warning">📂 Качи лог за анализ</button>
 </form>
@@ -20,5 +22,14 @@
   <input id="user-input" type="text" placeholder="Напиши съобщение...">
   <button id="send-btn">Изпрати</button>
 </div>
+{% if last_step %}
+  <p class="text-sm text-gray-600 mb-4">🕓 Последна активност: {{ last_step }}</p>
+  <a href="{{ url_for('ai_teacher.lesson') if last_step == 'lesson' else url_for('ai_teacher.exercise') }}"
+     class="bg-indigo-600 text-white px-4 py-2 rounded">
+     Продължи от {{ last_step }}
+  </a>
+{% endif %}
+
+
 <script src="{{ url_for('static', filename='ai_teacher.js') }}"></script>
 {% endblock %}

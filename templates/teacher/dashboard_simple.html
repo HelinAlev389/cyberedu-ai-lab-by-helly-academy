@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Преподавателско Табло{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <h2 class="text-center mb-4">Добре дошъл, {{ user.username }}!</h2>
+
+    <div class="row text-center">
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <h4>Pdf Отчети</h4>
+          <p><strong>18</strong></p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <h4>Мисии</h4>
+          <p><strong>5</strong></p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <h4>Студенти</h4>
+          <p><strong>1</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

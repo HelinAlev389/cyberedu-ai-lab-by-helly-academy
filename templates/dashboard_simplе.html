@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Учителски Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Здравей, {{ user.first_name }} {{ user.last_name }}!</h1>
+    <p>Добре дошъл в твоя панел.</p>
+
+    <ul>
+        <li><a href="{{ url_for('teacher_dashboard.manage_lessons') }}">Уроци</a></li>
+        <li><a href="{{ url_for('teacher_dashboard.view_progress') }}">Прогрес на студентите</a></li>
+        <li><a href="{{ url_for('auth.logout') }}">Изход</a></li>
+    </ul>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}AI Конфигурация{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h3 class="mb-4 text-primary">⚙️ AI Настройки за урок</h3>
+
+    <form method="POST" action="{{ url_for('teacher_dashboard.set_ai_config') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="mb-3">
+        <label for="topic" class="form-label">Тема</label>
+        <input type="text" name="topic" id="topic" class="form-control" value="{{ cfg.topic or '' }}" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="difficulty" class="form-label">Ниво</label>
+        <select name="difficulty" id="difficulty" class="form-select">
+          <option value="beginner" {% if cfg.difficulty == 'beginner' %}selected{% endif %}>Начално</option>
+          <option value="intermediate" {% if cfg.difficulty == 'intermediate' %}selected{% endif %}>Средно</option>
+          <option value="advanced" {% if cfg.difficulty == 'advanced' %}selected{% endif %}>Напреднало</option>
+
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="checkpoint" class="form-label">Минимална оценка за преминаване</label>
+        <input type="number" name="checkpoint" id="checkpoint" min="0" max="100" class="form-control" value="{{ cfg.checkpoint or 50 }}">
+      </div>
+
+      <button type="submit" class="btn btn-success">💾 Запази</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

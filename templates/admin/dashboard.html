@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Админ табло{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1 class="mb-4">Добре дошъл, Администратор!</h1>
+
+  <div class="row mb-4">
+    <div class="col">
+      <div class="card">
+        <div class="card-body">
+          <strong>Общ брой потребители:</strong> {{ user_count }}<br>
+          <strong>Брой уроци:</strong> {{ lesson_count }}<br>
+          <strong>AI памет:</strong> {{ memory_count }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="mt-4">Потребители</h2>
+  <div class="mb-3 text-end">
+  <a href="{{ url_for('admin_dashboard.create_user') }}" class="btn btn-success">➕ Създай потребител</a>
+</div>
+
+  <table class="table table-striped table-bordered">
+    <thead class="table-dark">
+      <tr>
+        <th>#</th>
+        <th>Потребителско име</th>
+        <th>Име</th>
+        <th>Имейл</th>
+        <th>Роля</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in teachers + students %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.first_name }} {{ user.last_name }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+          <a href="{{ url_for('admin_dashboard.edit_user', user_id=user.id) }}" class="btn btn-sm btn-warning">Редактирай</a>
+          <form action="{{ url_for('admin_dashboard.delete_user', user_id=user.id) }}" method="post" style="display:inline-block;" onsubmit="return confirm('Сигурен ли си?');">
+            <button class="btn btn-sm btn-danger" type="submit">Изтрий</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <h3 class="mt-5">Последна активност</h3>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-4">
+    <input type="text" name="username" placeholder="Потребител" value="{{ request.args.get('username', '') }}" class="form-control">
+  </div>
+  <div class="col-md-4">
+    <input type="date" name="date" value="{{ request.args.get('date', '') }}" class="form-control">
+  </div>
+  <div class="col-md-4">
+    <button type="submit" class="btn btn-primary">Филтрирай</button>
+    <a href="{{ url_for('admin_dashboard.dashboard') }}" class="btn btn-secondary">Изчисти</a>
+  </div>
+</form>
+
+  <h3 class="mt-5">Последна активност</h3>
+<ul class="list-group">
+  {% for log in logs %}
+    <li class="list-group-item">
+      {{ log.timestamp.strftime('%d.%m.%Y %H:%M:%S') }} —
+      {{ log.user.username }}: {{ log.action }}
+    </li>
+  {% else %}
+    <li class="list-group-item">Няма записана активност.</li>
+  {% endfor %}
+</ul>
+
+</div>
+{% endblock %}

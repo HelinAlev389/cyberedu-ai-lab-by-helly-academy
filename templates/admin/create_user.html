@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Създай потребител{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Създаване на потребител</h2>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+      {{ form.username.label(class="form-label") }}
+      {{ form.username(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.email.label(class="form-label") }}
+      {{ form.email(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.first_name.label(class="form-label") }}
+      {{ form.first_name(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.last_name.label(class="form-label") }}
+      {{ form.last_name(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.role.label(class="form-label") }}
+      {{ form.role(class="form-select") }}
+    </div>
+    <div class="mb-3">
+      {{ form.password.label(class="form-label") }}
+      {{ form.password(class="form-control") }}
+    </div>
+    <button class="btn btn-success" type="submit">Създай</button>
+    <a href="{{ url_for('admin_dashboard.dashboard') }}" class="btn btn-secondary">Отказ</a>
+  </form>
+</div>
+{% endblock %}

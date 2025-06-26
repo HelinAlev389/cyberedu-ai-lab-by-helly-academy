@@ -9,8 +9,10 @@ from .walkthrough.routes import walkthrough_bp
 from .learn.routes import learn_bp
 from .ai_teacher import ai_teacher_bp
 from .teacher_dashboard import teacher_dashboard_bp
-from blueprints.student_dashboard.routes import student_dashboard_bp
-from blueprints.main.routes import main_bp
+from .student_dashboard.routes import student_dashboard_bp
+from .main.routes import main_bp
+from .admin_dashboard.routes import admin_dashboard_bp
+from .walkthrough_feedback import feedback_bp
 
 
 def register_blueprints(app):
@@ -25,6 +27,8 @@ def register_blueprints(app):
     app.register_blueprint(teacher_dashboard_bp)
     app.register_blueprint(student_dashboard_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(admin_dashboard_bp)
+    app.register_blueprint(feedback_bp)
 
 
 def student_dashboard():
